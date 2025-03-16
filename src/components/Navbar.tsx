@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Settings, Key } from "lucide-react";
+import { Settings, Key, MessageSquare } from "lucide-react";
 import SettingsDialog from "./SettingsDialog";
 import { useApiKey } from "@/context/ApiKeyContext";
+import { Link } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,9 +33,9 @@ const Navbar: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <a href="/" className="text-xl font-medium transition-colors hover:text-black">
-              Gemini Key Cache
-            </a>
+            <Link to="/" className="text-xl font-medium transition-colors hover:text-black">
+              Gemini Chat
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -56,6 +57,13 @@ const Navbar: React.FC = () => {
             >
               About
             </a>
+            <Link
+              to="/chat"
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -73,6 +81,16 @@ const Navbar: React.FC = () => {
               <Key className="h-4 w-4" />
               {isKeySet ? "API Key Set" : "Set API Key"}
             </Button>
+            <Link to="/chat">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span className="sr-only">Chat</span>
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="icon"
