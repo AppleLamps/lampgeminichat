@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Configuration for the Gemini API
@@ -35,6 +34,14 @@ const DEFAULT_SAFETY_SETTINGS: SafetySetting[] = [
   { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
 ];
 
+interface GenerationConfig {
+  temperature: number;
+  topK: number;
+  topP: number;
+  maxOutputTokens: number;
+  responseModalities?: string[]; // Add this for image generation
+}
+
 interface GeminiTextRequest {
   contents: {
     role: string;
@@ -46,48 +53,7 @@ interface GeminiTextRequest {
       };
     }[];
   }[];
-  generationConfig: {
-    temperature: number;
-    topK: number;
-    topP: number;
-    maxOutputTokens: number;
-  };
-  safetySettings: SafetySetting[];
-}
-
-interface GeminiImageGenerationRequest {
-  contents: {
-    role: string;
-    parts: {
-      text: string;
-    }[];
-  }[];
-  generationConfig: {
-    temperature: number;
-    topK: number;
-    topP: number;
-    maxOutputTokens: number;
-  };
-  safetySettings: SafetySetting[];
-}
-
-interface GeminiImageEditingRequest {
-  contents: {
-    role: string;
-    parts: {
-      text?: string;
-      inlineData?: {
-        mimeType: string;
-        data: string;
-      };
-    }[];
-  }[];
-  generationConfig: {
-    temperature: number;
-    topK: number;
-    topP: number;
-    maxOutputTokens: number;
-  };
+  generationConfig: GenerationConfig;
   safetySettings: SafetySetting[];
 }
 
@@ -108,6 +74,7 @@ export class GeminiService {
 
   private async makeApiRequest(url: string, payload: any): Promise<any> {
     try {
+      console.log(`Sending request to: ${url}`);
       const response = await fetch(
         `${url}?key=${this.apiKey}`,
         {
@@ -123,7 +90,6 @@ export class GeminiService {
         const errorData = await response.json() as GeminiErrorResponse;
         console.error("Gemini API error:", errorData);
         
-        // Handle common API errors
         if (errorData.error.code === 400) {
           toast.error("Invalid request to Gemini API");
         } else if (errorData.error.code === 401) {
@@ -162,9 +128,8 @@ export class GeminiService {
     );
   }
 
-  // Detect if the message is requesting image editing (requires an image in the previous messages)
+  // Detect if the message is requesting image editing
   private isImageEditingRequest(message: string, messages: ChatMessage[]): boolean {
-    // Check if there's a recent image in the conversation
     const hasRecentImage = messages.slice(-5).some(msg => msg.imageUrl);
     
     const editingKeywords = [
@@ -195,11 +160,12 @@ export class GeminiService {
     const isImageGeneration = this.isImageGenerationRequest(latestUserMessage.content);
     const isImageEditing = this.isImageEditingRequest(latestUserMessage.content, messages);
     
+    console.log(`Request type: ${isImageGeneration ? 'Image Generation' : isImageEditing ? 'Image Editing' : 'Text Chat'}`);
+    
     // Choose the appropriate model and method based on the request type
     if (isImageGeneration) {
       return this.generateImage(latestUserMessage.content);
     } else if (isImageEditing) {
-      // Find the most recent image to edit
       const imageToEdit = [...messages].reverse().find(msg => msg.imageUrl)?.imageUrl;
       if (imageToEdit) {
         return this.editImage(latestUserMessage.content, imageToEdit);
@@ -259,8 +225,10 @@ export class GeminiService {
   // Generate an image with gemini-2.0-flash-exp
   private async generateImage(prompt: string): Promise<ChatMessage | null> {
     try {
+      console.log("Generating image with prompt:", prompt);
+      
       // Create a request for image generation
-      const payload: GeminiImageGenerationRequest = {
+      const payload = {
         contents: [{
           role: "user",
           parts: [{ text: prompt }]
@@ -269,7 +237,8 @@ export class GeminiService {
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096
+          maxOutputTokens: 4096,
+          responseModalities: ["Text", "Image"]  // Critical for image generation
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
@@ -287,11 +256,14 @@ export class GeminiService {
 
       // Check if the response contains an image
       const parts = data.candidates[0].content.parts;
+      console.log("Response parts:", parts.length);
+      
       const imagePart = parts.find((part: any) => part.inlineData?.mimeType?.startsWith('image/'));
       
       if (!imagePart) {
         // If no image, return text response
         const textPart = parts.find((part: any) => part.text);
+        console.log("No image in response, returning text");
         return {
           role: "assistant",
           content: textPart?.text || "I generated an image, but couldn't retrieve it properly.",
@@ -301,6 +273,7 @@ export class GeminiService {
 
       // Create image URL from base64 data
       const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+      console.log("Image generated successfully");
       
       return {
         role: "assistant",
@@ -317,6 +290,8 @@ export class GeminiService {
   // Edit an image with gemini-2.0-flash-exp-image-generation
   private async editImage(instructions: string, imageUrl: string): Promise<ChatMessage | null> {
     try {
+      console.log("Editing image with instructions:", instructions);
+      
       // Convert the image URL to base64 if it's not already
       let imageData = imageUrl;
       if (imageUrl.startsWith('data:')) {
@@ -337,7 +312,7 @@ export class GeminiService {
       }
 
       // Create request payload for image editing
-      const payload: GeminiImageEditingRequest = {
+      const payload = {
         contents: [{
           role: "user",
           parts: [
@@ -356,7 +331,8 @@ export class GeminiService {
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096
+          maxOutputTokens: 4096,
+          responseModalities: ["Text", "Image"]  // Critical for image generation
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
@@ -379,6 +355,7 @@ export class GeminiService {
       if (!imagePart) {
         // If no image, return text response
         const textPart = parts.find((part: any) => part.text);
+        console.log("No image in edit response, returning text");
         return {
           role: "assistant",
           content: textPart?.text || "I tried to edit the image, but couldn't complete the task.",
@@ -388,6 +365,7 @@ export class GeminiService {
 
       // Create image URL from base64 data
       const editedImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+      console.log("Image edited successfully");
       
       return {
         role: "assistant",
