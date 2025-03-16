@@ -2,9 +2,8 @@ import { toast } from "sonner";
 
 // Configuration for the Gemini API
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-const TEXT_MODEL = "gemini-2.0-flash";
-const IMAGE_GENERATION_MODEL = "gemini-2.0-flash-exp";
-const IMAGE_EDITING_MODEL = "gemini-2.0-flash-exp-image-generation";
+const MODEL = "gemini-2.0-flash-exp"; // Using same model for text and image generation
+const IMAGE_EDITING_MODEL = "gemini-2.0-flash-exp-image-generation"; // Keep separate model for image editing
 
 export type MessageRole = "user" | "assistant" | "system";
 
@@ -206,7 +205,7 @@ export class GeminiService {
     return this.sendTextMessage(messages);
   }
 
-  // Regular text chat with gemini-2.0-flash
+  // Regular text chat with gemini-2.0-flash-exp (now with responseModalities)
   private async sendTextMessage(messages: ChatMessage[]): Promise<ChatMessage | null> {
     try {
       // Format messages for Gemini API
@@ -215,21 +214,22 @@ export class GeminiService {
         parts: [{ text: msg.content }]
       }));
 
-      // Create request payload
+      // Create request payload - now include responseModalities for text chat too
       const payload: GeminiRequest = {
         contents: formattedMessages,
         generationConfig: {
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096
+          maxOutputTokens: 4096,
+          responseModalities: ["Text"] // Just text for normal chat
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
 
-      // Call Gemini API
+      // Call Gemini API with the unified model
       const data = await this.makeApiRequest(
-        `${API_URL}/${TEXT_MODEL}:generateContent`,
+        `${API_URL}/${MODEL}:generateContent`,
         payload
       );
       
@@ -273,9 +273,9 @@ export class GeminiService {
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
 
-      // Call Gemini API for image generation
+      // Call Gemini API for image generation with the same model as text
       const data = await this.makeApiRequest(
-        `${API_URL}/${IMAGE_GENERATION_MODEL}:generateContent`,
+        `${API_URL}/${MODEL}:generateContent`,
         payload
       );
 
@@ -389,9 +389,9 @@ export class GeminiService {
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
 
-      // Call Gemini API
+      // Call Gemini API - keep using IMAGE_EDITING_MODEL for editing
       const data = await this.makeApiRequest(
-        `${API_URL}/${IMAGE_GENERATION_MODEL}:generateContent`,
+        `${API_URL}/${IMAGE_EDITING_MODEL}:generateContent`,
         payload
       );
 
