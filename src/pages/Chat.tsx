@@ -4,12 +4,13 @@ import { useChat } from "@/hooks/useChat";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import { Button } from "@/components/ui/button";
-import { Trash2, Settings, MessageSquare } from "lucide-react";
+import { Trash2, Settings, MessageSquare, ArrowLeft } from "lucide-react";
 import SettingsDialog from "@/components/SettingsDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const Chat: React.FC = () => {
   const { messages, isLoading, loadingMessage, sendMessage, clearChat, isKeySet } = useChat();
@@ -42,6 +43,18 @@ const Chat: React.FC = () => {
       >
         <div className="flex justify-between items-center max-w-4xl mx-auto p-4">
           <div className="flex items-center gap-2">
+            <Link to="/">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full hover:bg-primary/10 transition-colors hover:scale-105 transform-gpu relative overflow-hidden group mr-2"
+                title="Back to home"
+              >
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 duration-300" />
+                <span className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-full transition-opacity duration-300"></span>
+                <span className="sr-only">Back to home</span>
+              </Button>
+            </Link>
             <div className={cn(
               "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 overflow-hidden",
               "bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm",
