@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useChatHistory } from "@/hooks/useChatHistory";
@@ -39,46 +38,33 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
 
-  // Handle scroll events to apply header effects
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     setScrolled(target.scrollTop > 20);
   };
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading, loadingMessage]);
   
-  // Load a chat from history when currentChatId changes
   useEffect(() => {
     if (currentChatId) {
       const chat = getChatById(currentChatId);
       if (chat) {
         clearChat();
-        // We need to set a small timeout to ensure clearChat has completed
         setTimeout(() => {
-          // Add all messages from the chat history
           chat.messages.forEach((msg, index) => {
             if (index === 0 && msg.role === 'system') {
-              // Skip the initial system message
               return;
             }
             
             if (msg.role === 'user') {
-              // For user messages, we need to "send" them
-              // But we don't want to actually call the API again
-              // So we'll add them directly to the UI
               const userContent = msg.content;
               const userImageUrl = msg.imageUrl;
               
-              // Adding directly without API call by accessing useChat internals
-              // This is a simulation of the user sending the message
               if (index === chat.messages.length - 1 && msg.role === 'user') {
-                // If this is the last message and it's from the user,
-                // we need to actually send it to get a response
                 sendMessage(userContent, userImageUrl);
               }
             }
@@ -88,30 +74,25 @@ const Chat: React.FC = () => {
     }
   }, [currentChatId, getChatById, clearChat, sendMessage]);
   
-  // Save current chat when messages change
   useEffect(() => {
-    if (messages.length > 1) { // More than just the initial system message
+    if (messages.length > 1) {
       if (currentChatId) {
         saveChat(messages, currentChatId);
       }
     }
   }, [messages, currentChatId, saveChat]);
   
-  // Custom send message handler that saves the chat
   const handleSendMessage = async (content: string, imageData?: string) => {
     await sendMessage(content, imageData);
   };
   
-  // Custom clear chat handler
   const handleClearChat = () => {
     clearChat();
     startNewChat();
     toast.info("Chat cleared");
   };
   
-  // Handle selecting a chat from history
   const handleSelectChat = (chatId: string) => {
-    // If we already have unsaved messages, save them first
     if (messages.length > 1 && !currentChatId) {
       saveChat(messages);
     }
@@ -119,13 +100,10 @@ const Chat: React.FC = () => {
     const chat = getChatById(chatId);
     if (chat) {
       clearChat();
-      // The actual loading happens in the useEffect that watches currentChatId
     }
   };
   
-  // Handle starting a new chat
   const handleNewChat = () => {
-    // If we have unsaved messages, save them first
     if (messages.length > 1 && !currentChatId) {
       saveChat(messages);
     }
@@ -136,14 +114,14 @@ const Chat: React.FC = () => {
 
   return (
     <SidebarProvider defaultOpen={isOpen}>
-      <div className="flex h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+      <div className="flex min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
         <ChatSidebar 
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           currentMessages={messages}
         />
         
-        <div className="flex flex-col flex-1 h-screen">
+        <div className="flex flex-col flex-1 w-0 min-h-screen relative">
           <header 
             className={cn(
               "border-b sticky top-0 z-40 transition-all duration-500",
