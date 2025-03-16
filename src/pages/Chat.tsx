@@ -12,7 +12,7 @@ import { BlurContainer } from "@/components/ui/blur-container";
 import { cn } from "@/lib/utils";
 
 const Chat: React.FC = () => {
-  const { messages, isLoading, sendMessage, clearChat, isKeySet } = useChat();
+  const { messages, isLoading, loadingMessage, sendMessage, clearChat, isKeySet } = useChat();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -28,7 +28,7 @@ const Chat: React.FC = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isLoading, loadingMessage]);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
@@ -112,7 +112,7 @@ const Chat: React.FC = () => {
             />
           ))}
           
-          {isLoading && (
+          {isLoading && loadingMessage && (
             <div className="flex justify-start animate-fade-in">
               <BlurContainer 
                 intensity="light" 
@@ -125,7 +125,7 @@ const Chat: React.FC = () => {
                   <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:150ms]"></span>
                   <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:300ms]"></span>
                 </div>
-                <span className="text-sm text-emerald-600/90 dark:text-emerald-400/90">Thinking...</span>
+                <span className="text-sm text-emerald-600/90 dark:text-emerald-400/90">{loadingMessage}</span>
               </BlurContainer>
             </div>
           )}

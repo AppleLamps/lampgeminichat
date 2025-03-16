@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { GeminiService, ChatMessage } from "@/services/geminiService";
 import { useApiKey } from "@/context/ApiKeyContext";
@@ -7,6 +8,7 @@ export const useChat = () => {
   const { apiKey, isKeySet } = useApiKey();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   
   // Initialize with a welcome message
   useEffect(() => {
@@ -44,43 +46,29 @@ export const useChat = () => {
         console.log("Attaching image to message");
       }
       
-      // First, add the user message to the messages array
+      // Add the user message to the chat
       setMessages(prev => [...prev, userMessage]);
       
-      // Set loading state to true
+      // Set loading state
       setIsLoading(true);
       
-      // Determine if this is likely an image-related operation for loading message
-      const isImageRelated = 
-        !!imageData || // Image is attached
-        content.toLowerCase().includes("image") || 
-        content.toLowerCase().includes("picture") ||
-        content.toLowerCase().includes("photo") ||
-        content.toLowerCase().includes("draw") ||
-        content.toLowerCase().includes("edit") ||
-        content.toLowerCase().includes("create") ||
-        content.toLowerCase().includes("generate");
-      
-      // Add a temporary loading message
-      const loadingMessage = imageData 
+      // Determine loading message based on context
+      const tempLoadingMessage = imageData 
         ? "Processing your image..." 
-        : isImageRelated 
+        : content.toLowerCase().includes("image") || 
+          content.toLowerCase().includes("picture") ||
+          content.toLowerCase().includes("photo") ||
+          content.toLowerCase().includes("draw") ||
+          content.toLowerCase().includes("edit") ||
+          content.toLowerCase().includes("create") ||
+          content.toLowerCase().includes("generate")
           ? "Generating image..." 
           : "Thinking...";
       
-      const thinkingMessage: ChatMessage = {
-        role: "assistant",
-        content: loadingMessage,
-        timestamp: new Date(),
-        isGeneratingImage: isImageRelated
-      };
+      // Set the loading message for UI display - but don't add it to messages array
+      setLoadingMessage(tempLoadingMessage);
       
-      // Add thinking message
-      setMessages(prev => [...prev, thinkingMessage]);
-      
-      // Get the current messages including the new user message
-      // This is to ensure we're working with the most up-to-date messages
-      // But we need to exclude the thinking message
+      // Get the current messages for the API call - exclude any temporary messages
       const currentMessages = messages.filter(msg => 
         !msg.isGeneratingImage && !msg.isEditingImage
       );
@@ -94,37 +82,23 @@ export const useChat = () => {
       // Send request to Gemini API
       const response = await geminiService.sendMessage(currentMessages);
       
-      // Remove any temporary thinking messages
-      setMessages(prev => prev.filter(msg => 
-        !msg.isGeneratingImage && !msg.isEditingImage
-      ));
+      // Clear loading message
+      setLoadingMessage(null);
       
       if (response) {
         // Add assistant response to chat
-        setMessages(prev => {
-          // Remove any temporary messages first
-          const filteredMessages = prev.filter(msg => 
-            !msg.isGeneratingImage && !msg.isEditingImage
-          );
-          return [...filteredMessages, response];
-        });
+        setMessages(prev => [...prev, response]);
       } else {
         // Handle the case where there was no valid response
-        setMessages(prev => {
-          // Remove any temporary messages first
-          const filteredMessages = prev.filter(msg => 
-            !msg.isGeneratingImage && !msg.isEditingImage
-          );
-          
-          // Add a friendly error message
-          return [...filteredMessages, {
-            role: "assistant",
-            content: imageData 
-              ? "I'm having trouble processing that image. Could you try a different image or request?"
-              : "I'm having trouble processing that request. Could you try rephrasing it?",
-            timestamp: new Date()
-          }];
-        });
+        const errorMessage: ChatMessage = {
+          role: "assistant",
+          content: imageData 
+            ? "I'm having trouble processing that image. Could you try a different image or request?"
+            : "I'm having trouble processing that request. Could you try rephrasing it?",
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, errorMessage]);
         
         // Show a toast with the error
         toast.error(imageData 
@@ -137,18 +111,14 @@ export const useChat = () => {
       toast.error("Failed to send message");
       
       // Add a friendly error message to the chat
-      setMessages(prev => {
-        // Remove any temporary messages first
-        const filteredMessages = prev.filter(msg => 
-          !msg.isGeneratingImage && !msg.isEditingImage
-        );
-        
-        return [...filteredMessages, {
-          role: "assistant",
-          content: "Sorry, I encountered an error. Please try again with a different request.",
-          timestamp: new Date()
-        }];
-      });
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again with a different request.",
+        timestamp: new Date()
+      }]);
+      
+      // Clear loading message
+      setLoadingMessage(null);
     } finally {
       // Always set loading to false when done
       setIsLoading(false);
@@ -164,11 +134,14 @@ export const useChat = () => {
         timestamp: new Date()
       }
     ]);
+    setLoadingMessage(null);
+    setIsLoading(false);
   }, []);
 
   return {
     messages,
     isLoading,
+    loadingMessage,
     sendMessage,
     clearChat,
     isKeySet
