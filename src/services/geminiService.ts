@@ -106,25 +106,115 @@ export class GeminiService {
     }
   }
 
-  // Detect if the message is requesting image generation
+  // Enhanced detection for image generation requests
   private isImageGenerationRequest(message: string): boolean {
-    const imageGenerationKeywords = [
-      "generate an image", 
-      "create an image", 
-      "make an image",
-      "draw",
-      "generate a picture",
-      "create a picture",
-      "show me a picture",
-      "visualize",
-      "image of",
-      "picture of",
-      "photo of"
+    // Normalize the message for case-insensitive matching
+    const normalizedMessage = message.toLowerCase().trim();
+    
+    // 1. Creation Keywords - explicit phrases about creating images
+    const creationKeywords = [
+      "generate an image", "create an image", "make an image",
+      "generate a picture", "create a picture", "make a picture",
+      "generate a photo", "create a photo", "make a photo",
+      "draw", "sketch", "paint", "illustrate", "render",
+      "show me an image", "show me a picture", "visualize",
+      "imagine", "picture of", "photo of", "image of", "illustration of"
     ];
-
-    return imageGenerationKeywords.some(keyword => 
-      message.toLowerCase().includes(keyword.toLowerCase())
-    );
+    
+    // 2. Subject-Specific Keywords - common subjects people want images of
+    const subjectKeywords = [
+      "landscape", "portrait", "scene", "character", "fantasy",
+      "sci-fi", "futuristic", "vintage", "abstract", "realistic",
+      "anime", "cartoon", "3d", "digital art", "painting", "world",
+      "environment", "background", "setting", "artwork", "poster"
+    ];
+    
+    // 3. Style Descriptors - words that indicate visual styling
+    const styleKeywords = [
+      "style", "aesthetic", "vibrant", "colorful", "dark", "bright",
+      "moody", "atmospheric", "dramatic", "minimalist", "detailed",
+      "photorealistic", "artistic", "surreal", "dystopian", "utopian"
+    ];
+    
+    // 4. Visual Elements Keywords - descriptions of visual elements
+    const visualElementsKeywords = [
+      "color", "lighting", "shadow", "texture", "pattern",
+      "composition", "perspective", "angle", "view", "shot",
+      "filter", "effect", "tone", "mood", "vibrance", "contrast"
+    ];
+    
+    // 5. Directional Words - phrases that often precede image requests
+    const directionalPhrases = [
+      "create a", "generate a", "make a", "design a", "produce a",
+      "show me a", "visualize a", "illustrate a", "picture a"
+    ];
+    
+    // Check for explicit creation keywords (strongest signal)
+    for (const keyword of creationKeywords) {
+      if (normalizedMessage.includes(keyword)) {
+        console.log(`Image generation detected via creation keyword: ${keyword}`);
+        return true;
+      }
+    }
+    
+    // Advanced pattern matching using a scoring system
+    let score = 0;
+    
+    // Check for directional phrase + subject combinations
+    for (const phrase of directionalPhrases) {
+      for (const subject of subjectKeywords) {
+        if (normalizedMessage.includes(`${phrase} ${subject}`)) {
+          console.log(`Image generation detected via phrase+subject: ${phrase} ${subject}`);
+          return true;
+        }
+      }
+    }
+    
+    // Add score for subject keywords
+    for (const keyword of subjectKeywords) {
+      if (normalizedMessage.includes(keyword)) {
+        score += 2;
+      }
+    }
+    
+    // Add score for style keywords
+    for (const keyword of styleKeywords) {
+      if (normalizedMessage.includes(keyword)) {
+        score += 1.5;
+      }
+    }
+    
+    // Add score for visual elements
+    for (const keyword of visualElementsKeywords) {
+      if (normalizedMessage.includes(keyword)) {
+        score += 1;
+      }
+    }
+    
+    // Additional patterns that strongly suggest image generation
+    if (/create a .*(scene|landscape|portrait|picture|image)/i.test(normalizedMessage)) {
+      score += 5;
+    }
+    
+    // Check for detailed visual descriptions
+    const hasDetailedDescription = normalizedMessage.length > 20 && 
+      (normalizedMessage.includes(" with ") || normalizedMessage.includes(" and ")) &&
+      (score >= 2);
+    
+    if (hasDetailedDescription) {
+      score += 3;
+    }
+    
+    // Check for art direction words combined with subjects
+    if (/in (the style of|a|an) .*(style|aesthetic|art)/i.test(normalizedMessage)) {
+      score += 3;
+    }
+    
+    // Log the final detection score for debugging
+    console.log(`Image generation detection score: ${score} for message: "${normalizedMessage.substring(0, 50)}..."`);
+    
+    // Return true if score is above threshold (fine-tuned threshold)
+    return score >= 4;
   }
 
   // Improved detection for image editing requests
@@ -284,7 +374,7 @@ export class GeminiService {
         return null;
       }
 
-      // Check if the response contains an image
+      // Process the response
       const parts = data.candidates[0].content.parts;
       console.log("Response parts:", parts.length);
       
