@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { BlurContainer } from "@/components/ui/blur-container";
@@ -13,7 +14,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
   const { isKeySet } = useApiKey();
 
   return (
-    <section className="relative overflow-hidden pt-32 pb-24 md:min-h-screen md:flex md:items-center">
+    <section className="relative overflow-hidden pt-24 pb-8 md:pt-32 md:pb-12">
       {/* Background gradient */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(200,210,255,0.3),rgba(255,255,255,0)_25%),radial-gradient(circle_at_80%_60%,rgba(200,240,230,0.35),rgba(255,255,255,0)_30%)]"></div>
       

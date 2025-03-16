@@ -44,9 +44,9 @@ const TryPromptsSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-white border-t border-gray-100" id="try-prompts">
+    <section className="py-8 bg-white" id="try-prompts">
       <div className="container px-4 md:px-6 mx-auto max-w-6xl">
-        <div className="text-center mb-12 animate-on-scroll">
+        <div className="text-center mb-8 animate-on-scroll">
           <div className="inline-flex items-center justify-center p-1 mb-2 rounded-full bg-primary/5">
             <span className="flex items-center gap-1.5 text-sm font-medium text-primary px-3 py-1">
               <Sparkles className="h-4 w-4" />
