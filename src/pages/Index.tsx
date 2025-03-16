@@ -38,7 +38,9 @@ const Index = () => {
                   <div className="space-y-2">
                     <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium animate-fade-in">
                       <span className="flex items-center gap-1.5">
-                        <img src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" className="h-3.5 w-3.5" alt="Gemini Icon" />
+                        <div className="h-3.5 w-3.5 rounded-full overflow-hidden">
+                          <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Gemini Icon" />
+                        </div>
                         Powered by Gemini
                       </span>
                     </div>
@@ -329,4 +331,3 @@ const Index = () => {
 };
 
 export default Index;
-

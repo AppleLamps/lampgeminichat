@@ -25,7 +25,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
             <div className="space-y-2">
               <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium animate-fade-in">
                 <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <div className="h-3.5 w-3.5 rounded-full overflow-hidden">
+                    <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Gemini Icon" />
+                  </div>
                   Powered by Gemini
                 </span>
               </div>
@@ -65,8 +67,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
             <BlurContainer className="p-6 md:p-8 relative" intensity="light">
               <div className="flex flex-col space-y-4">
                 <div className="flex items-start gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Bot className="h-4 w-4" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground overflow-hidden">
+                    <div className="h-full w-full">
+                      <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Bot" />
+                    </div>
                   </div>
                   <div className="bg-muted/10 rounded-md p-3 max-w-[80%]">
                     <p className="text-sm">Hello! I'm your Gemini AI assistant. How can I help you today?</p>
@@ -85,8 +89,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
                 </div>
                 
                 <div className="flex items-start gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Bot className="h-4 w-4" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground overflow-hidden">
+                    <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Bot" />
                   </div>
                   <div className="bg-muted/10 rounded-md p-3 max-w-[80%]">
                     <p className="text-sm">Quantum computing uses quantum bits or qubits, which can be both 0 and 1 at the same time. This allows quantum computers to process complex problems much faster than traditional computers...</p>

@@ -43,18 +43,15 @@ const Chat: React.FC = () => {
         <div className="flex justify-between items-center max-w-4xl mx-auto p-4">
           <div className="flex items-center gap-2">
             <div className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
+              "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 overflow-hidden",
               "bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm",
               "before:content-[''] before:absolute before:inset-0 before:rounded-full before:bg-primary/5 before:blur-xl before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
               scrolled ? "scale-90" : "scale-100"
             )}>
               <img 
-                src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" 
+                src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" 
                 alt="Gemini Chat Logo" 
-                className={cn(
-                  "transition-all duration-300",
-                  scrolled ? "h-4 w-4" : "h-5 w-5"
-                )} 
+                className="h-full w-full object-cover" 
               />
             </div>
             <h1 className={cn(
@@ -63,7 +60,10 @@ const Chat: React.FC = () => {
             )}>
               Gemini Chat
               <span className="ml-1.5 hidden sm:inline-flex items-center text-xs font-normal bg-primary/10 text-primary/90 px-1.5 py-0.5 rounded-full">
-                <img src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" alt="" className="h-3 w-3 mr-0.5" /> AI
+                <div className="h-3 w-3 mr-0.5 overflow-hidden rounded-full">
+                  <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" alt="" className="h-full w-full object-cover" />
+                </div>
+                AI
               </span>
             </h1>
           </div>
