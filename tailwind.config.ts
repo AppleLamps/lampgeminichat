@@ -112,6 +112,18 @@ export default {
 				'blur-in': {
 					from: { filter: 'blur(4px)', opacity: '0' },
 					to: { filter: 'blur(0)', opacity: '1' }
+				},
+				'shine': {
+					'0%': { backgroundPosition: '200% center' },
+					'100%': { backgroundPosition: '-200% center' }
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
+				},
+				'border-pulse': {
+					'0%, 100%': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+					'50%': { borderColor: 'rgba(255, 255, 255, 0.2)' }
 				}
 			},
 			animation: {
@@ -122,7 +134,15 @@ export default {
 				'slide-up': 'slide-up 0.4s ease-out',
 				'slide-down': 'slide-down 0.4s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
-				'blur-in': 'blur-in 0.4s ease-out'
+				'blur-in': 'blur-in 0.4s ease-out',
+				'shine': 'shine 8s ease-in-out infinite',
+				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'border-pulse': 'border-pulse 3s ease-in-out infinite'
+			},
+			boxShadow: {
+				'glow-sm': '0 0 10px rgba(255, 255, 255, 0.1)',
+				'glow-md': '0 0 15px rgba(255, 255, 255, 0.15)',
+				'glow-lg': '0 0 20px rgba(255, 255, 255, 0.2)',
 			}
 		}
 	},

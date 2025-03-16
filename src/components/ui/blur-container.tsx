@@ -39,7 +39,7 @@ const BlurContainer = ({
       className={cn(
         "relative overflow-hidden rounded-2xl border shadow-sm transition-all duration-300",
         gradient !== "none" ? "border-white/10 dark:border-white/5" : "border-white/20 dark:border-white/10",
-        hoverEffect && "hover:shadow-md hover:border-white/30 dark:hover:border-white/15 hover:scale-[1.01] transform-gpu",
+        hoverEffect && "hover:shadow-xl hover:shadow-primary/5 dark:hover:shadow-primary/10 hover:border-white/30 dark:hover:border-white/15 hover:scale-[1.02] transform-gpu",
         containerClassName
       )}
       {...props}

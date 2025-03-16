@@ -36,7 +36,7 @@ const Chat: React.FC = () => {
         className={cn(
           "border-b sticky top-0 z-40 transition-all duration-500",
           scrolled 
-            ? "bg-background/90 backdrop-blur-xl shadow-sm border-white/10" 
+            ? "bg-gradient-to-r from-background/80 via-background/90 to-background/80 backdrop-blur-xl shadow-md border-white/10 dark:border-white/5" 
             : "bg-transparent backdrop-blur-sm border-transparent"
         )}
       >
@@ -45,6 +45,7 @@ const Chat: React.FC = () => {
             <div className={cn(
               "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
               "bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm",
+              "before:content-[''] before:absolute before:inset-0 before:rounded-full before:bg-primary/5 before:blur-xl before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
               scrolled ? "scale-90" : "scale-100"
             )}>
               <Bot className={cn(
@@ -68,9 +69,10 @@ const Chat: React.FC = () => {
               size="icon" 
               onClick={() => clearChat()}
               title="Clear chat"
-              className="rounded-full hover:bg-primary/10 transition-colors hover:scale-105 transform-gpu"
+              className="rounded-full hover:bg-primary/10 transition-colors hover:scale-105 transform-gpu relative overflow-hidden group"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 transition-transform group-hover:scale-110 duration-300" />
+              <span className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-full transition-opacity duration-300"></span>
               <span className="sr-only">Clear chat</span>
             </Button>
             <Button 
@@ -78,9 +80,10 @@ const Chat: React.FC = () => {
               size="icon" 
               onClick={() => setSettingsOpen(true)}
               title="Settings"
-              className="rounded-full hover:bg-primary/10 transition-colors hover:scale-105 transform-gpu"
+              className="rounded-full hover:bg-primary/10 transition-colors hover:scale-105 transform-gpu relative overflow-hidden group"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4 transition-transform group-hover:rotate-45 duration-300" />
+              <span className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 rounded-full transition-opacity duration-300"></span>
               <span className="sr-only">Settings</span>
             </Button>
           </div>
@@ -88,7 +91,7 @@ const Chat: React.FC = () => {
       </header>
 
       {!isKeySet && (
-        <Alert variant="destructive" className="m-4 max-w-4xl mx-auto animate-fade-in">
+        <Alert variant="destructive" className="m-4 max-w-4xl mx-auto animate-fade-in bg-destructive/5">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Please set your Gemini API key in settings to start chatting.
