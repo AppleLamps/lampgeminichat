@@ -88,20 +88,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
     >
       <BlurContainer 
         intensity="medium"
-        gradient={isFocused ? "prominent" : "subtle"}
+        gradient={isFocused ? "subtle" : "none"}
         hoverEffect
         className={cn(
-          "p-3 transition-all duration-500",
+          "p-3 transition-all duration-500 bg-background/70",
           isFocused 
-            ? "bg-gradient-to-r from-background/70 via-background/90 to-background/70 shadow-lg border-primary/10 dark:border-primary/20" 
-            : "bg-background/50 border-white/10 dark:border-white/5",
+            ? "shadow-lg border-primary/10 dark:border-primary/20" 
+            : "border-white/10 dark:border-white/5",
           "animate-slide-up"
         )}
         containerClassName={cn(
           "shadow-md hover:shadow-xl dark:shadow-primary/5 hover:shadow-primary/10 dark:hover:shadow-primary/20",
-          "transition-all duration-300 ease-in-out",
-          "before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary/5 before:via-transparent before:to-primary/5 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500 before:rounded-2xl",
-          "after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500 after:rounded-2xl"
+          "transition-all duration-300 ease-in-out"
         )}
       >
         {imageData && (
@@ -127,7 +125,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <div className="flex gap-2 items-end max-w-4xl mx-auto">
           <div className="relative flex-1 group">
             {!isKeySet && (
-              <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-md flex items-center justify-center z-10 animate-fade-in">
+              <div className="absolute inset-0 bg-background/80 rounded-md flex items-center justify-center z-10 animate-fade-in">
                 <Button 
                   variant="outline" 
                   onClick={openSettings} 
@@ -199,8 +197,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               "h-[56px] w-[56px] rounded-full transition-all duration-300",
               (message.trim() || imageData) && !isLoading && isKeySet
                 ? "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transform-gpu hover:scale-105"
-                : "bg-muted/80",
-              "relative overflow-hidden"
+                : "bg-muted/80"
             )}
           >
             {isLoading ? (
@@ -212,12 +209,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
               )} />
             )}
             <span className="sr-only">Send message</span>
-            {(message.trim() || imageData) && !isLoading && isKeySet && (
-              <>
-                <span className="absolute inset-0 bg-gradient-to-r from-indigo-600/0 via-white/10 to-indigo-600/0 opacity-0 hover:opacity-100 animate-[shine_3s_ease-in-out_infinite] pointer-events-none"></span>
-                <span className="absolute inset-0 bg-gradient-to-tr from-indigo-500/0 via-white/5 to-purple-600/0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></span>
-              </>
-            )}
           </Button>
         </div>
       </BlurContainer>

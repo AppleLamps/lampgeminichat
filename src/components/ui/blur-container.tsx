@@ -20,14 +20,14 @@ const BlurContainer = ({
   hoverEffect = false,
   ...props
 }: BlurContainerProps) => {
-  // Map intensity to blur amount
+  // Map intensity to background opacity and minimal blur
   const blurMap = {
-    light: "backdrop-blur-sm bg-white/30 dark:bg-black/20",
-    medium: "backdrop-blur-md bg-white/40 dark:bg-black/30",
-    heavy: "backdrop-blur-lg bg-white/50 dark:bg-black/40",
+    light: "bg-white/30 dark:bg-black/20 backdrop-blur-[2px]",
+    medium: "bg-white/40 dark:bg-black/30 backdrop-blur-[2px]", 
+    heavy: "bg-white/50 dark:bg-black/40 backdrop-blur-[2px]",
   };
 
-  // Map gradient options
+  // Map gradient options (removed blur from these)
   const gradientMap = {
     none: "",
     subtle: "bg-gradient-to-br from-white/40 to-white/20 dark:from-black/40 dark:to-black/20",
@@ -39,7 +39,7 @@ const BlurContainer = ({
       className={cn(
         "relative overflow-hidden rounded-2xl border shadow-sm transition-all duration-300",
         gradient !== "none" ? "border-white/10 dark:border-white/5" : "border-white/20 dark:border-white/10",
-        hoverEffect && "hover:shadow-xl hover:shadow-primary/5 dark:hover:shadow-primary/10 hover:border-white/30 dark:hover:border-white/15 hover:scale-[1.02] transform-gpu",
+        hoverEffect && "hover:shadow-md hover:shadow-primary/5 dark:hover:shadow-primary/10 hover:border-white/30 dark:hover:border-white/15 transform-gpu",
         containerClassName
       )}
       {...props}

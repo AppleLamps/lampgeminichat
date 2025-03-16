@@ -34,7 +34,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           intensity="light"
           gradient="subtle"
           hoverEffect
-          className="text-center italic text-muted-foreground text-sm py-3 px-6 max-w-md bg-gradient-to-r from-slate-400/10 via-slate-300/10 to-slate-400/5 dark:from-slate-800/20 dark:via-slate-700/15 dark:to-slate-800/10 shadow-lg border-white/10 dark:border-white/5 animate-scale-in"
+          className="text-center italic text-muted-foreground text-sm py-3 px-6 max-w-md bg-gradient-to-r from-slate-400/10 via-slate-300/10 to-slate-400/5 dark:from-slate-800/20 dark:via-slate-700/15 dark:to-slate-800/10 border-white/10 dark:border-white/5 animate-scale-in"
         >
           <div className="text-center">{message.content}</div>
         </BlurContainer>
@@ -78,8 +78,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               className={cn(
                 "py-3 px-4 transition-all duration-300 shadow-md",
                 isUser 
-                  ? "bg-gradient-to-br from-indigo-500/15 to-purple-600/10 border-indigo-200/30 hover:from-indigo-500/20 hover:to-purple-600/15" 
-                  : "bg-gradient-to-br from-emerald-500/15 to-teal-600/10 border-emerald-200/30 hover:from-emerald-500/20 hover:to-teal-600/15"
+                  ? "bg-gradient-to-br from-indigo-500/15 to-purple-600/10 border-indigo-200/30 hover:border-indigo-200/50" 
+                  : "bg-gradient-to-br from-emerald-500/15 to-teal-600/10 border-emerald-200/30 hover:border-emerald-200/50"
               )}
             >
               <div className="whitespace-pre-wrap break-words">
