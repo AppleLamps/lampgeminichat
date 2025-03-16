@@ -4,7 +4,7 @@ import { useChat } from "@/hooks/useChat";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import { Button } from "@/components/ui/button";
-import { Trash2, Settings, Bot, Sparkles } from "lucide-react";
+import { Trash2, Settings, MessageSquare } from "lucide-react";
 import SettingsDialog from "@/components/SettingsDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -48,10 +48,14 @@ const Chat: React.FC = () => {
               "before:content-[''] before:absolute before:inset-0 before:rounded-full before:bg-primary/5 before:blur-xl before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
               scrolled ? "scale-90" : "scale-100"
             )}>
-              <Bot className={cn(
-                "transition-all duration-300",
-                scrolled ? "h-4 w-4" : "h-5 w-5"
-              )} />
+              <img 
+                src="/logo.png" 
+                alt="Gemini Chat Logo" 
+                className={cn(
+                  "transition-all duration-300",
+                  scrolled ? "h-4 w-4" : "h-5 w-5"
+                )} 
+              />
             </div>
             <h1 className={cn(
               "font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent transition-all duration-300",
@@ -59,7 +63,7 @@ const Chat: React.FC = () => {
             )}>
               Gemini Chat
               <span className="ml-1.5 hidden sm:inline-flex items-center text-xs font-normal bg-primary/10 text-primary/90 px-1.5 py-0.5 rounded-full">
-                <Sparkles className="h-3 w-3 mr-0.5" /> AI
+                <img src="/logo.png" alt="" className="h-3 w-3 mr-0.5" /> AI
               </span>
             </h1>
           </div>
