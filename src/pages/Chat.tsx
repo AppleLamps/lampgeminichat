@@ -49,7 +49,7 @@ const Chat: React.FC = () => {
               scrolled ? "scale-90" : "scale-100"
             )}>
               <img 
-                src="/logo.png" 
+                src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" 
                 alt="Gemini Chat Logo" 
                 className={cn(
                   "transition-all duration-300",
@@ -63,7 +63,7 @@ const Chat: React.FC = () => {
             )}>
               Gemini Chat
               <span className="ml-1.5 hidden sm:inline-flex items-center text-xs font-normal bg-primary/10 text-primary/90 px-1.5 py-0.5 rounded-full">
-                <img src="/logo.png" alt="" className="h-3 w-3 mr-0.5" /> AI
+                <img src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" alt="" className="h-3 w-3 mr-0.5" /> AI
               </span>
             </h1>
           </div>

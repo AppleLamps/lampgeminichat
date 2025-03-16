@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="text-xl font-medium transition-colors hover:text-black flex items-center gap-2">
-              <img src="/logo.png" alt="Gemini Chat Logo" className="h-5 w-5" />
+              <img src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" alt="Gemini Chat Logo" className="h-5 w-5" />
               Gemini Chat
             </Link>
           </div>

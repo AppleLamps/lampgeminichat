@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { ApiKeyProvider } from "@/context/ApiKeyContext";
@@ -15,7 +14,6 @@ const Index = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { isKeySet } = useApiKey();
 
-  // Setup scroll animations
   useEffect(() => {
     const observer = setupScrollAnimations();
     return () => {
@@ -32,19 +30,15 @@ const Index = () => {
       <div className="min-h-screen bg-white overflow-hidden">
         <Navbar />
         <main className="relative">
-          {/* Hero Section - Redesigned for Chat Focus */}
           <section className="relative overflow-hidden pt-32 pb-24 md:min-h-screen md:flex md:items-center">
-            {/* Background gradient */}
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(200,210,255,0.3),rgba(255,255,255,0)_25%),radial-gradient(circle_at_80%_60%,rgba(200,240,230,0.35),rgba(255,255,255,0)_30%)]"></div>
-            
-            {/* Content */}
             <div className="container px-4 md:px-6">
               <div className="grid gap-6 md:grid-cols-2 md:gap-12 lg:grid-cols-[1fr_450px] items-center">
                 <div className="flex flex-col justify-center space-y-4 animate-slide-up">
                   <div className="space-y-2">
                     <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium animate-fade-in">
                       <span className="flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <img src="/lovable-uploads/66327ead-425a-46ca-a1ec-49477748e80c.png" className="h-3.5 w-3.5" alt="Gemini Icon" />
                         Powered by Gemini
                       </span>
                     </div>
@@ -79,7 +73,6 @@ const Index = () => {
                   </div>
                 </div>
                 
-                {/* Chat preview visualization */}
                 <div className="animate-fade-in [animation-delay:300ms]">
                   <BlurContainer className="p-6 md:p-8 relative" intensity="light">
                     <div className="flex flex-col space-y-4">
@@ -125,7 +118,6 @@ const Index = () => {
             </div>
           </section>
           
-          {/* Features Section - Updated for Chat Focus */}
           <section id="features" className="py-20 bg-gray-50">
             <div className="container px-4 md:px-6">
               <div className="text-center max-w-3xl mx-auto mb-12 animate-on-scroll">
@@ -138,7 +130,6 @@ const Index = () => {
               </div>
               
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Feature 1 */}
                 <BlurContainer className="p-6 animate-on-scroll" intensity="light">
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <BrainCircuit className="h-6 w-6 text-primary" />
@@ -150,7 +141,6 @@ const Index = () => {
                   </p>
                 </BlurContainer>
                 
-                {/* Feature 2 */}
                 <BlurContainer className="p-6 animate-on-scroll" intensity="light">
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <MessageSquare className="h-6 w-6 text-primary" />
@@ -162,7 +152,6 @@ const Index = () => {
                   </p>
                 </BlurContainer>
                 
-                {/* Feature 3 */}
                 <BlurContainer className="p-6 animate-on-scroll" intensity="light">
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Sparkles className="h-6 w-6 text-primary" />
@@ -177,7 +166,6 @@ const Index = () => {
             </div>
           </section>
           
-          {/* How It Works Section - Updated for Chat Focus */}
           <section id="how-it-works" className="py-20">
             <div className="container px-4 md:px-6">
               <div className="grid gap-12 md:grid-cols-2 items-center">
@@ -269,7 +257,6 @@ const Index = () => {
             </div>
           </section>
           
-          {/* About Section - Updated for Chat Focus */}
           <section id="about" className="py-20 bg-gray-50">
             <div className="container px-4 md:px-6">
               <div className="mx-auto max-w-3xl text-center animate-on-scroll">
@@ -296,7 +283,6 @@ const Index = () => {
             </div>
           </section>
           
-          {/* CTA Section - Added for Chat Focus */}
           <section className="py-16 bg-primary/5">
             <div className="container px-4 md:px-6">
               <div className="flex flex-col items-center justify-center text-center max-w-3xl mx-auto animate-on-scroll">
@@ -316,7 +302,6 @@ const Index = () => {
             </div>
           </section>
           
-          {/* Footer - Updated for Chat Focus */}
           <footer className="border-t border-gray-200 py-12 md:py-16">
             <div className="container px-4 md:px-6">
               <div className="flex flex-col md:flex-row justify-between items-center">
@@ -344,3 +329,4 @@ const Index = () => {
 };
 
 export default Index;
+
