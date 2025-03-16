@@ -1,10 +1,8 @@
 import { toast } from "sonner";
 
 // Configuration for the Gemini API
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const TEXT_MODEL = "gemini-2.0-flash";
 const IMAGE_GENERATION_MODEL = "gemini-2.0-flash-exp";
-const IMAGE_EDITING_MODEL = "gemini-2.0-flash-exp-image-generation";
 
 export type MessageRole = "user" | "assistant" | "system";
 
@@ -16,8 +14,6 @@ export interface ChatMessage {
   isGeneratingImage?: boolean;
   isEditingImage?: boolean;
 }
-
-export type MessageContent = string | { text: string; image?: { data: string } };
 
 // Safety settings interface
 interface SafetySetting {
@@ -34,77 +30,25 @@ const DEFAULT_SAFETY_SETTINGS: SafetySetting[] = [
   { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
 ];
 
-interface GenerationConfig {
-  temperature: number;
-  topK: number;
-  topP: number;
-  maxOutputTokens: number;
-  responseModalities?: string[]; // Add this for image generation
-}
-
-interface GeminiTextRequest {
-  contents: {
-    role: string;
-    parts: {
-      text?: string;
-      inlineData?: {
-        mimeType: string;
-        data: string;
-      };
-    }[];
-  }[];
-  generationConfig: GenerationConfig;
-  safetySettings: SafetySetting[];
-}
-
-interface GeminiErrorResponse {
-  error: {
-    code: number;
-    message: string;
-    status: string;
-  };
-}
-
 export class GeminiService {
   private apiKey: string;
-
+  private genAI: any; // GoogleGenerativeAI instance
+  
   constructor(apiKey: string) {
     this.apiKey = apiKey;
+    // We'll dynamically import the Google Generative AI library
+    this.initializeGenAI();
   }
-
-  private async makeApiRequest(url: string, payload: any): Promise<any> {
+  
+  private async initializeGenAI() {
     try {
-      console.log(`Sending request to: ${url}`);
-      const response = await fetch(
-        `${url}?key=${this.apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json() as GeminiErrorResponse;
-        console.error("Gemini API error:", errorData);
-        
-        if (errorData.error.code === 400) {
-          toast.error("Invalid request to Gemini API");
-        } else if (errorData.error.code === 401) {
-          toast.error("Invalid API key. Please check your settings.");
-        } else {
-          toast.error(`Error: ${errorData.error.message}`);
-        }
-        return null;
-      }
-
-      return await response.json();
+      // Dynamic import for browser compatibility
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      this.genAI = new GoogleGenerativeAI(this.apiKey);
+      console.log("GoogleGenerativeAI initialized successfully");
     } catch (error) {
-      console.error("Error calling Gemini API:", error);
-      toast.error("Failed to communicate with Gemini API");
-      return null;
+      console.error("Failed to initialize GoogleGenerativeAI:", error);
+      toast.error("Failed to initialize Gemini API client");
     }
   }
 
@@ -149,6 +93,15 @@ export class GeminiService {
   }
 
   async sendMessage(messages: ChatMessage[]): Promise<ChatMessage | null> {
+    // Ensure the GoogleGenerativeAI client is initialized
+    if (!this.genAI) {
+      await this.initializeGenAI();
+      if (!this.genAI) {
+        toast.error("Gemini API client not initialized");
+        return null;
+      }
+    }
+    
     // Get the latest user message
     const latestUserMessage = [...messages].reverse().find(msg => msg.role === "user");
     
@@ -179,15 +132,18 @@ export class GeminiService {
   // Regular text chat with gemini-2.0-flash
   private async sendTextMessage(messages: ChatMessage[]): Promise<ChatMessage | null> {
     try {
+      // Get the model for text chat
+      const model = this.genAI.getGenerativeModel({ model: TEXT_MODEL });
+      
       // Format messages for Gemini API
       const formattedMessages = messages.map(msg => ({
-        role: msg.role === "system" ? "user" : msg.role,
+        role: msg.role === "system" ? "user" : msg.role === "assistant" ? "model" : "user",
         parts: [{ text: msg.content }]
       }));
-
-      // Create request payload
-      const payload: GeminiTextRequest = {
-        contents: formattedMessages,
+      
+      // Create a chat session
+      const chat = model.startChat({
+        history: formattedMessages.slice(0, -1), // All messages except the last one
         generationConfig: {
           temperature: 0.7,
           topK: 40,
@@ -195,21 +151,20 @@ export class GeminiService {
           maxOutputTokens: 4096
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
-      };
-
-      // Call Gemini API
-      const data = await this.makeApiRequest(
-        `${API_URL}/${TEXT_MODEL}:generateContent`,
-        payload
-      );
+      });
       
-      if (!data || !data.candidates || !data.candidates[0]?.content) {
+      // Send the latest message
+      const latestMessage = formattedMessages[formattedMessages.length - 1];
+      const result = await chat.sendMessage(latestMessage.parts);
+      const response = result.response;
+      
+      if (!response || !response.candidates || !response.candidates[0]?.content) {
         toast.error("Received invalid response from Gemini API");
         return null;
       }
 
       // Extract the response text
-      const responseText = data.candidates[0].content.parts[0].text;
+      const responseText = response.candidates[0].content.parts[0].text;
       
       return {
         role: "assistant",
@@ -218,6 +173,7 @@ export class GeminiService {
       };
     } catch (error) {
       console.error("Error in sendTextMessage:", error);
+      toast.error("Error getting response from Gemini");
       return null;
     }
   }
@@ -227,188 +183,196 @@ export class GeminiService {
     try {
       console.log("Generating image with prompt:", prompt);
       
-      // Create a request for image generation
-      const payload = {
-        contents: [{
-          role: "user",
-          parts: [{ text: prompt }]
-        }],
+      // Get the model for image generation
+      const model = this.genAI.getGenerativeModel({
+        model: IMAGE_GENERATION_MODEL,
         generationConfig: {
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096,
-          responseModalities: ["Text", "Image"]  // Critical for image generation
+          responseModalities: ["Text", "Image"] // Critical for image generation
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
-      };
-
-      // Call Gemini API for image generation
-      const data = await this.makeApiRequest(
-        `${API_URL}/${IMAGE_GENERATION_MODEL}:generateContent`,
-        payload
-      );
-
-      if (!data || !data.candidates || !data.candidates[0]?.content) {
+      });
+      
+      // Send the message to generate an image
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      
+      if (!response || !response.candidates || !response.candidates[0]?.content) {
         toast.error("Failed to generate image");
         return null;
       }
 
-      // Check if the response contains an image
-      const parts = data.candidates[0].content.parts;
-      console.log("Response parts:", parts.length);
+      let textResponse = null;
+      let imageData = null;
+      let mimeType = "image/png";
+
+      // Process the response to find text and image parts
+      const parts = response.candidates[0].content.parts;
+      console.log("Number of parts in response:", parts.length);
       
-      const imagePart = parts.find((part: any) => part.inlineData?.mimeType?.startsWith('image/'));
+      for (const part of parts) {
+        if (part.inlineData) {
+          // Found image data
+          imageData = part.inlineData.data;
+          mimeType = part.inlineData.mimeType || "image/png";
+          console.log("Image data received, length:", imageData.length);
+        } else if (part.text) {
+          // Found text data
+          textResponse = part.text;
+          console.log("Text response received:", textResponse?.substring(0, 50) + "...");
+        }
+      }
       
-      if (!imagePart) {
-        // If no image, return text response
-        const textPart = parts.find((part: any) => part.text);
-        console.log("No image in response, returning text");
+      if (!imageData) {
+        // If no image was found, return just the text
         return {
           role: "assistant",
-          content: textPart?.text || "I generated an image, but couldn't retrieve it properly.",
+          content: textResponse || "I tried to generate an image, but couldn't create one.",
           timestamp: new Date()
         };
       }
-
-      // Create image URL from base64 data
-      const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+      
+      // Create a data URL for the image
+      const imageUrl = `data:${mimeType};base64,${imageData}`;
       console.log("Image generated successfully");
       
       return {
         role: "assistant",
-        content: "Here's the image I generated for you:",
+        content: textResponse || "Here's the image I generated for you:",
         imageUrl: imageUrl,
         timestamp: new Date()
       };
     } catch (error) {
       console.error("Error in generateImage:", error);
+      toast.error("Failed to generate image");
       return null;
     }
   }
 
-  // Edit an image with gemini-2.0-flash-exp-image-generation
+  // Edit an image
   private async editImage(instructions: string, imageUrl: string): Promise<ChatMessage | null> {
     try {
       console.log("Editing image with instructions:", instructions);
       
       // Convert the image URL to base64 if it's not already
       let imageData = imageUrl;
+      let mimeType = "image/jpeg";
+      
       if (imageUrl.startsWith('data:')) {
         // Already base64, extract the data part
-        imageData = imageUrl.split(',')[1];
+        const imgParts = imageUrl.split(',');
+        if (imgParts.length < 2) {
+          throw new Error("Invalid image data URL format");
+        }
+        
+        imageData = imgParts[1];
+        mimeType = imageUrl.includes("image/png") ? "image/png" : "image/jpeg";
       } else {
         // Fetch the image and convert to base64
         try {
           const response = await fetch(imageUrl);
           const blob = await response.blob();
-          imageData = await this.blobToBase64(blob);
-          imageData = imageData.split(',')[1]; // Remove the data:image/... prefix
+          const reader = new FileReader();
+          
+          // Convert blob to base64
+          const base64 = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          
+          const base64Parts = base64.split(',');
+          if (base64Parts.length < 2) {
+            throw new Error("Failed to convert image to base64");
+          }
+          
+          imageData = base64Parts[1];
+          mimeType = base64.includes("image/png") ? "image/png" : "image/jpeg";
         } catch (error) {
           console.error("Error converting image to base64:", error);
           toast.error("Failed to process the image for editing");
           return null;
         }
       }
-
-      // Create request payload for image editing
-      const payload = {
-        contents: [{
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType: this.getMimeTypeFromUrl(imageUrl),
-                data: imageData
-              }
-            },
-            {
-              text: instructions
-            }
-          ]
-        }],
+      
+      // Get the model for image editing
+      const model = this.genAI.getGenerativeModel({
+        model: IMAGE_GENERATION_MODEL,
         generationConfig: {
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096,
-          responseModalities: ["Text", "Image"]  // Critical for image generation
+          responseModalities: ["Text", "Image"] // Critical for image generation
         },
         safetySettings: DEFAULT_SAFETY_SETTINGS
-      };
-
-      // Call Gemini API for image editing
-      const data = await this.makeApiRequest(
-        `${API_URL}/${IMAGE_EDITING_MODEL}:generateContent`,
-        payload
-      );
-
-      if (!data || !data.candidates || !data.candidates[0]?.content) {
+      });
+      
+      // Prepare the message parts
+      const messageParts = [
+        {
+          inlineData: {
+            data: imageData,
+            mimeType: mimeType
+          }
+        },
+        { text: instructions }
+      ];
+      
+      // Send the message to edit the image
+      const result = await model.generateContent(messageParts);
+      const response = result.response;
+      
+      if (!response || !response.candidates || !response.candidates[0]?.content) {
         toast.error("Failed to edit image");
         return null;
       }
 
-      // Check if the response contains an image
-      const parts = data.candidates[0].content.parts;
-      const imagePart = parts.find((part: any) => part.inlineData?.mimeType?.startsWith('image/'));
+      let textResponse = null;
+      let editedImageData = null;
+      let editedMimeType = "image/png";
+
+      // Process the response to find text and image parts
+      const parts = response.candidates[0].content.parts;
+      console.log("Number of parts in edit response:", parts.length);
       
-      if (!imagePart) {
-        // If no image, return text response
-        const textPart = parts.find((part: any) => part.text);
-        console.log("No image in edit response, returning text");
+      for (const part of parts) {
+        if (part.inlineData) {
+          // Found image data
+          editedImageData = part.inlineData.data;
+          editedMimeType = part.inlineData.mimeType || "image/png";
+          console.log("Edited image data received, length:", editedImageData.length);
+        } else if (part.text) {
+          // Found text data
+          textResponse = part.text;
+          console.log("Text response received:", textResponse?.substring(0, 50) + "...");
+        }
+      }
+      
+      if (!editedImageData) {
+        // If no image was found, return just the text
         return {
           role: "assistant",
-          content: textPart?.text || "I tried to edit the image, but couldn't complete the task.",
+          content: textResponse || "I tried to edit the image, but couldn't create a new version.",
           timestamp: new Date()
         };
       }
-
-      // Create image URL from base64 data
-      const editedImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+      
+      // Create a data URL for the edited image
+      const editedImageUrl = `data:${editedMimeType};base64,${editedImageData}`;
       console.log("Image edited successfully");
       
       return {
         role: "assistant",
-        content: "Here's the edited image:",
+        content: textResponse || "Here's the edited image:",
         imageUrl: editedImageUrl,
         timestamp: new Date()
       };
     } catch (error) {
       console.error("Error in editImage:", error);
+      toast.error("Failed to edit image");
       return null;
-    }
-  }
-
-  // Helper to convert blob to base64
-  private blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  // Helper to get MIME type from URL
-  private getMimeTypeFromUrl(url: string): string {
-    if (url.startsWith('data:')) {
-      const matches = url.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
-      return matches ? matches[1] : 'image/jpeg';
-    }
-    
-    const extension = url.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'image/jpeg';
     }
   }
 }
