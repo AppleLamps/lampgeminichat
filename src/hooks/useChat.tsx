@@ -48,7 +48,9 @@ export const useChat = () => {
       // Add a temporary "thinking" message if it's likely to be an image generation request
       const isImageRequest = content.toLowerCase().includes("image") || 
                             content.toLowerCase().includes("picture") ||
-                            content.toLowerCase().includes("draw");
+                            content.toLowerCase().includes("draw") ||
+                            content.toLowerCase().includes("create") ||
+                            content.toLowerCase().includes("generate");
       
       if (isImageRequest) {
         const thinkingMessage: ChatMessage = {
@@ -82,10 +84,32 @@ export const useChat = () => {
           const filteredMessages = prev.filter(msg => !msg.isGeneratingImage && !msg.isEditingImage);
           return [...filteredMessages, response];
         });
+      } else {
+        // If no response, add a friendly error message
+        setMessages(prev => {
+          // Filter out any temporary messages first
+          const filteredMessages = prev.filter(msg => !msg.isGeneratingImage && !msg.isEditingImage);
+          return [...filteredMessages, {
+            role: "assistant",
+            content: "I'm having trouble processing that request. Could you try rephrasing it or try a different question?",
+            timestamp: new Date()
+          }];
+        });
       }
     } catch (error) {
       console.error("Error in sendMessage:", error);
       toast.error("Failed to send message");
+      
+      // Add a friendly error message to the chat
+      setMessages(prev => {
+        // Filter out any temporary messages first
+        const filteredMessages = prev.filter(msg => !msg.isGeneratingImage && !msg.isEditingImage);
+        return [...filteredMessages, {
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again with a different request.",
+          timestamp: new Date()
+        }];
+      });
     } finally {
       setIsLoading(false);
     }
