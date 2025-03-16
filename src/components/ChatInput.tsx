@@ -54,19 +54,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
     >
       <BlurContainer 
         intensity="medium"
+        gradient={isFocused ? "subtle" : "none"}
+        hoverEffect
         className={cn(
           "p-3 transition-all duration-300",
-          isFocused ? "bg-gradient-to-r from-background/70 via-background/90 to-background/70 shadow-lg" : "bg-background/50"
+          isFocused 
+            ? "bg-gradient-to-r from-background/70 via-background/90 to-background/70 shadow-lg border-white/20 dark:border-white/10" 
+            : "bg-background/50 border-white/10 dark:border-white/5",
+          "animate-slide-up"
         )}
       >
         <div className="flex gap-2 items-end max-w-4xl mx-auto">
-          <div className="relative flex-1">
+          <div className="relative flex-1 group">
             {!isKeySet && (
               <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-md flex items-center justify-center z-10 animate-fade-in">
                 <Button 
                   variant="outline" 
                   onClick={openSettings} 
-                  className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-600/10 hover:from-indigo-500/20 hover:to-purple-600/20 transition-all duration-300"
+                  className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-600/10 hover:from-indigo-500/20 hover:to-purple-600/20 transition-all duration-300 shadow-md"
                 >
                   <Settings className="h-4 w-4" />
                   Set API Key to Start
@@ -82,11 +87,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               className={cn(
-                "resize-none py-3 min-h-[56px] max-h-[200px] overflow-y-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent placeholder:text-muted-foreground/50",
-                isLoading && "opacity-70"
+                "resize-none py-3 min-h-[56px] max-h-[200px] overflow-y-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent placeholder:text-muted-foreground/50 transition-all",
+                isLoading && "opacity-70",
+                isFocused ? "pl-4" : "pl-3"
               )}
               disabled={isLoading || !isKeySet}
             />
+            {message.length > 0 && (
+              <div className="absolute bottom-1 right-2 text-xs text-muted-foreground/50 pointer-events-none">
+                {message.length} {message.length === 1 ? 'character' : 'characters'}
+              </div>
+            )}
           </div>
           <Button 
             type="submit" 
@@ -94,7 +105,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             className={cn(
               "h-[56px] w-[56px] rounded-full transition-all duration-300",
               message.trim() && !isLoading && isKeySet
-                ? "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg"
+                ? "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transform-gpu hover:scale-105"
                 : "bg-muted/80"
             )}
           >

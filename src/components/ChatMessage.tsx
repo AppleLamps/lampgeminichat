@@ -2,7 +2,7 @@
 import React from "react";
 import { ChatMessage as ChatMessageType } from "@/services/geminiService";
 import { cn } from "@/lib/utils";
-import { User, Bot } from "lucide-react";
+import { User, Bot, CheckCheck } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -24,13 +24,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         "w-full transition-all",
         isUser ? "justify-end" : "justify-start",
         isSequential ? "mt-2" : "mt-6",
-        isSystem ? "my-8 flex justify-center animate-fade-in" : "flex"
+        isSystem ? "my-8 flex justify-center animate-fade-in" : "flex",
+        "animate-scale-in"
       )}
     >
       {isSystem ? (
         <BlurContainer
           intensity="light"
-          className="text-center italic text-muted-foreground text-sm py-3 px-6 max-w-md bg-gradient-to-r from-slate-400/5 to-slate-50/5 dark:from-slate-800/10 dark:to-slate-800/5 animate-scale-in"
+          gradient="subtle"
+          hoverEffect
+          className="text-center italic text-muted-foreground text-sm py-3 px-6 max-w-md bg-gradient-to-r from-slate-400/10 via-slate-300/10 to-slate-400/5 dark:from-slate-800/20 dark:via-slate-700/15 dark:to-slate-800/10 shadow-lg border-white/10 dark:border-white/5 animate-scale-in"
         >
           <div className="text-center">{message.content}</div>
         </BlurContainer>
@@ -50,10 +53,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             >
               <Avatar 
                 className={cn(
-                  "h-8 w-8 ring-2 transition-all duration-300",
+                  "h-8 w-8 ring-2 transition-all duration-300 shadow-md",
                   isUser 
-                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 ring-indigo-500/20" 
-                    : "bg-gradient-to-br from-emerald-500 to-teal-600 ring-emerald-500/20"
+                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 ring-indigo-500/20 hover:ring-indigo-500/40" 
+                    : "bg-gradient-to-br from-emerald-500 to-teal-600 ring-emerald-500/20 hover:ring-emerald-500/40"
                 )}
               >
                 <AvatarFallback className="text-white">
@@ -70,25 +73,31 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           >
             <BlurContainer
               intensity={isUser ? "medium" : "light"}
+              hoverEffect
               className={cn(
-                "py-3 px-4 transition-all duration-300",
+                "py-3 px-4 transition-all duration-300 shadow-md",
                 isUser 
-                  ? "bg-gradient-to-br from-indigo-500/10 to-purple-600/5 border-indigo-200/20" 
-                  : "bg-gradient-to-br from-emerald-500/10 to-teal-600/5 border-emerald-200/20"
+                  ? "bg-gradient-to-br from-indigo-500/15 to-purple-600/10 border-indigo-200/30 hover:from-indigo-500/20 hover:to-purple-600/15" 
+                  : "bg-gradient-to-br from-emerald-500/15 to-teal-600/10 border-emerald-200/30 hover:from-emerald-500/20 hover:to-teal-600/15"
               )}
             >
               <div className="whitespace-pre-wrap break-words">
                 {message.content}
               </div>
               
-              {message.timestamp && (
-                <div className="text-xs text-muted-foreground/70 mt-2 text-right">
-                  {new Date(message.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </div>
-              )}
+              <div className="flex items-center justify-end mt-2 space-x-1">
+                {message.timestamp && (
+                  <div className="text-xs text-muted-foreground/70 text-right flex items-center">
+                    <span className="mr-1">
+                      {new Date(message.timestamp).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </span>
+                    {isUser && <CheckCheck className="h-3 w-3 text-indigo-500/70" />}
+                  </div>
+                )}
+              </div>
             </BlurContainer>
           </div>
         </div>

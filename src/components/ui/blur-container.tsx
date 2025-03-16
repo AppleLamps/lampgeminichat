@@ -8,6 +8,7 @@ interface BlurContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   containerClassName?: string;
   gradient?: "none" | "subtle" | "prominent";
+  hoverEffect?: boolean;
 }
 
 const BlurContainer = ({
@@ -16,6 +17,7 @@ const BlurContainer = ({
   gradient = "none",
   className,
   containerClassName,
+  hoverEffect = false,
   ...props
 }: BlurContainerProps) => {
   // Map intensity to blur amount
@@ -37,6 +39,7 @@ const BlurContainer = ({
       className={cn(
         "relative overflow-hidden rounded-2xl border shadow-sm transition-all duration-300",
         gradient !== "none" ? "border-white/10 dark:border-white/5" : "border-white/20 dark:border-white/10",
+        hoverEffect && "hover:shadow-md hover:border-white/30 dark:hover:border-white/15 hover:scale-[1.01] transform-gpu",
         containerClassName
       )}
       {...props}
