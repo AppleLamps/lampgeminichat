@@ -2,7 +2,7 @@
 import React from "react";
 import { ChatMessage as ChatMessageType } from "@/services/geminiService";
 import { cn } from "@/lib/utils";
-import { User, Bot, CheckCheck } from "lucide-react";
+import { User, Bot, CheckCheck, Image } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -17,6 +17,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
+  const hasImage = Boolean(message.imageUrl);
   
   return (
     <div
@@ -84,6 +85,29 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               <div className="whitespace-pre-wrap break-words">
                 {message.content}
               </div>
+              
+              {hasImage && (
+                <div className="mt-3 relative">
+                  <div className="rounded-md overflow-hidden shadow-md border border-white/10 dark:border-white/5 group-hover:border-white/20 dark:group-hover:border-white/10 transition-all">
+                    <img 
+                      src={message.imageUrl} 
+                      alt="Generated content" 
+                      className="w-full h-auto max-h-96 object-contain bg-black/40"
+                      loading="lazy"
+                    />
+                  </div>
+                  <a 
+                    href={message.imageUrl} 
+                    download={`gemini-image-${Date.now()}.png`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-all shadow-lg border border-white/10 hover:border-white/20"
+                  >
+                    <Image className="h-4 w-4 text-white" />
+                    <span className="sr-only">Download image</span>
+                  </a>
+                </div>
+              )}
               
               <div className="flex items-center justify-end mt-2 space-x-1">
                 {message.timestamp && (

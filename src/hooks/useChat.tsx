@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { GeminiService, ChatMessage } from "@/services/geminiService";
 import { useApiKey } from "@/context/ApiKeyContext";
 import { toast } from "sonner";
@@ -10,18 +10,18 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Initialize with a welcome message
-  useState(() => {
+  useEffect(() => {
     setMessages([
       {
         role: "system",
-        content: "Welcome to Gemini Chat! How can I help you today?",
+        content: "Welcome to Gemini Chat! I can help with text responses, image generation, and image editing. Try asking me to create an image or help with an existing one.",
         timestamp: new Date()
       }
     ]);
-  });
+  }, []);
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim()) return;
+  const sendMessage = useCallback(async (content: string, imageData?: string) => {
+    if (!content.trim() && !imageData) return;
     
     // Check if API key is set
     if (!isKeySet || !apiKey) {
@@ -30,15 +30,36 @@ export const useChat = () => {
     }
 
     try {
-      // Add user message to chat
+      // Create user message
       const userMessage: ChatMessage = {
         role: "user",
-        content,
-        timestamp: new Date()
+        content: content,
+        timestamp: new Date(),
       };
+      
+      // If image data is provided, add it to the message
+      if (imageData) {
+        userMessage.imageUrl = imageData;
+      }
       
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
+
+      // Add a temporary "thinking" message if it's likely to be an image generation request
+      const isImageRequest = content.toLowerCase().includes("image") || 
+                            content.toLowerCase().includes("picture") ||
+                            content.toLowerCase().includes("draw");
+      
+      if (isImageRequest) {
+        const thinkingMessage: ChatMessage = {
+          role: "assistant",
+          content: isImageRequest ? "Generating image..." : "Thinking...",
+          timestamp: new Date(),
+          isGeneratingImage: isImageRequest
+        };
+        
+        setMessages(prev => [...prev, thinkingMessage]);
+      }
 
       // Create a copy of messages that includes the new user message
       const updatedMessages = [...messages, userMessage];
@@ -50,8 +71,17 @@ export const useChat = () => {
       const response = await geminiService.sendMessage(updatedMessages);
       
       if (response) {
+        // Remove the temporary thinking message if it exists
+        if (isImageRequest) {
+          setMessages(prev => prev.filter(msg => !msg.isGeneratingImage));
+        }
+        
         // Add assistant response to chat
-        setMessages(prev => [...prev, response]);
+        setMessages(prev => {
+          // Filter out any temporary messages first
+          const filteredMessages = prev.filter(msg => !msg.isGeneratingImage && !msg.isEditingImage);
+          return [...filteredMessages, response];
+        });
       }
     } catch (error) {
       console.error("Error in sendMessage:", error);
@@ -65,7 +95,7 @@ export const useChat = () => {
     setMessages([
       {
         role: "system",
-        content: "Chat cleared. How can I help you today?",
+        content: "Chat cleared. I can help with text responses, image generation, and image editing. Try asking me to create an image or help with an existing one.",
         timestamp: new Date()
       }
     ]);

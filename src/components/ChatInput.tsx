@@ -2,12 +2,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Settings, Sparkles } from "lucide-react";
+import { Send, Settings, Image, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BlurContainer } from "@/components/ui/blur-container";
+import { toast } from "sonner";
 
 interface ChatInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, imageData?: string) => void;
   isLoading: boolean;
   openSettings: () => void;
   isKeySet: boolean;
@@ -21,13 +22,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [imageData, setImageData] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !isLoading) {
-      onSendMessage(message);
+    if ((message.trim() || imageData) && !isLoading) {
+      onSendMessage(message, imageData || undefined);
       setMessage("");
+      setImageData(null);
     }
   };
 
@@ -35,6 +39,36 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size should be less than 10MB");
+      return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImageData(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImageData(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -70,6 +104,26 @@ const ChatInput: React.FC<ChatInputProps> = ({
           "after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500 after:rounded-2xl"
         )}
       >
+        {imageData && (
+          <div className="mb-3 relative rounded-md overflow-hidden border border-primary/20 max-w-xs mx-auto">
+            <img 
+              src={imageData} 
+              alt="Uploaded image" 
+              className="max-h-48 max-w-full object-contain mx-auto" 
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-90 hover:opacity-100"
+              onClick={clearImage}
+            >
+              <X className="h-3 w-3" />
+              <span className="sr-only">Remove image</span>
+            </Button>
+          </div>
+        )}
+        
         <div className="flex gap-2 items-end max-w-4xl mx-auto">
           <div className="relative flex-1 group">
             {!isKeySet && (
@@ -89,7 +143,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
+              placeholder={imageData ? "Describe what you want to do with this image..." : "Type a message or ask for an image..."}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               className={cn(
@@ -111,12 +165,39 @@ const ChatInput: React.FC<ChatInputProps> = ({
               </div>
             )}
           </div>
+          
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            className="hidden"
+            id="image-upload"
+            disabled={isLoading || !isKeySet}
+          />
+          
+          <Button 
+            type="button" 
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || !isKeySet}
+            className={cn(
+              "h-[56px] w-[56px] rounded-full transition-all duration-300 bg-muted/50 border-white/10 dark:border-white/5",
+              "hover:bg-primary/10 hover:border-primary/20"
+            )}
+            title="Upload image"
+          >
+            <Image className="h-5 w-5" />
+            <span className="sr-only">Upload image</span>
+          </Button>
+          
           <Button 
             type="submit" 
-            disabled={!message.trim() || isLoading || !isKeySet}
+            disabled={(!message.trim() && !imageData) || isLoading || !isKeySet}
             className={cn(
               "h-[56px] w-[56px] rounded-full transition-all duration-300",
-              message.trim() && !isLoading && isKeySet
+              (message.trim() || imageData) && !isLoading && isKeySet
                 ? "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transform-gpu hover:scale-105"
                 : "bg-muted/80",
               "relative overflow-hidden"
@@ -127,11 +208,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
             ) : (
               <Send className={cn(
                 "h-5 w-5 transition-transform duration-300",
-                message.trim() && !isLoading && isKeySet && "group-hover:translate-x-1"
+                (message.trim() || imageData) && !isLoading && isKeySet && "group-hover:translate-x-1"
               )} />
             )}
             <span className="sr-only">Send message</span>
-            {message.trim() && !isLoading && isKeySet && (
+            {(message.trim() || imageData) && !isLoading && isKeySet && (
               <>
                 <span className="absolute inset-0 bg-gradient-to-r from-indigo-600/0 via-white/10 to-indigo-600/0 opacity-0 hover:opacity-100 animate-[shine_3s_ease-in-out_infinite] pointer-events-none"></span>
                 <span className="absolute inset-0 bg-gradient-to-tr from-indigo-500/0 via-white/5 to-purple-600/0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></span>
