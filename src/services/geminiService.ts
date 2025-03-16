@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 // Configuration for the Gemini API
@@ -111,48 +112,72 @@ export class GeminiService {
     // Normalize the message for case-insensitive matching
     const normalizedMessage = message.toLowerCase().trim();
     
-    // 1. Creation Keywords - explicit phrases about creating images
+    // 1. Creation Keywords - expanded with more action verbs
     const creationKeywords = [
       "generate an image", "create an image", "make an image",
       "generate a picture", "create a picture", "make a picture",
       "generate a photo", "create a photo", "make a photo",
-      "draw", "sketch", "paint", "illustrate", "render",
+      "draw", "sketch", "paint", "illustrate", "render", "visualize",
       "show me an image", "show me a picture", "visualize",
-      "imagine", "picture of", "photo of", "image of", "illustration of"
+      "imagine", "picture of", "photo of", "image of", "illustration of",
+      "design a", "craft a", "produce a", "compose a", "depict a"
     ];
     
-    // 2. Subject-Specific Keywords - common subjects people want images of
+    // 2. Subject-Specific Keywords - expanded for character content
     const subjectKeywords = [
       "landscape", "portrait", "scene", "character", "fantasy",
       "sci-fi", "futuristic", "vintage", "abstract", "realistic",
       "anime", "cartoon", "3d", "digital art", "painting", "world",
-      "environment", "background", "setting", "artwork", "poster"
+      "environment", "background", "setting", "artwork", "poster",
+      "warrior", "hero", "figure", "person", "creature", "being",
+      "animal", "monster", "entity", "protagonist", "character"
     ];
     
-    // 3. Style Descriptors - words that indicate visual styling
+    // 3. Style Descriptors - expanded
     const styleKeywords = [
       "style", "aesthetic", "vibrant", "colorful", "dark", "bright",
       "moody", "atmospheric", "dramatic", "minimalist", "detailed",
-      "photorealistic", "artistic", "surreal", "dystopian", "utopian"
+      "photorealistic", "artistic", "surreal", "dystopian", "utopian",
+      "fantasy", "sci-fi", "cyberpunk", "steampunk", "medieval",
+      "futuristic", "ancient", "modern", "post-apocalyptic", "magical"
     ];
     
-    // 4. Visual Elements Keywords - descriptions of visual elements
+    // 4. Visual Elements Keywords
     const visualElementsKeywords = [
       "color", "lighting", "shadow", "texture", "pattern",
       "composition", "perspective", "angle", "view", "shot",
-      "filter", "effect", "tone", "mood", "vibrance", "contrast"
+      "filter", "effect", "tone", "mood", "vibrance", "contrast",
+      "attire", "clothing", "armor", "weapon", "accessory", "pose", 
+      "stance", "outfit", "gear", "equipment", "tool", "artifact"
     ];
     
-    // 5. Directional Words - phrases that often precede image requests
+    // 5. Directional Words - expanded
     const directionalPhrases = [
       "create a", "generate a", "make a", "design a", "produce a",
-      "show me a", "visualize a", "illustrate a", "picture a"
+      "show me a", "visualize a", "illustrate a", "picture a",
+      "craft a", "render a", "compose a", "depict a", "draw a"
+    ];
+    
+    // 6. Art Direction Combinations - highly specific patterns
+    const artDirectionCombinations = [
+      "fantasy warrior", "heroic character", "stylized portrait", 
+      "photorealistic image", "digital artwork", "character design",
+      "character concept", "battle pose", "action scene", "dynamic pose",
+      "ornate armor", "magical weapon", "epic scene", "fantasy landscape"
     ];
     
     // Check for explicit creation keywords (strongest signal)
     for (const keyword of creationKeywords) {
       if (normalizedMessage.includes(keyword)) {
         console.log(`Image generation detected via creation keyword: ${keyword}`);
+        return true;
+      }
+    }
+    
+    // Check for art direction combinations (very strong signal)
+    for (const combo of artDirectionCombinations) {
+      if (normalizedMessage.includes(combo)) {
+        console.log(`Image generation detected via art direction combo: ${combo}`);
         return true;
       }
     }
@@ -191,9 +216,25 @@ export class GeminiService {
       }
     }
     
+    // Special patterns detection for character descriptions
+    if (/with.*(armor|weapon|outfit|gear|equipment)/i.test(normalizedMessage)) {
+      score += 3;
+      console.log("Character description pattern detected (equipment)");
+    }
+    
+    if (/in a.*(pose|stance|position)/i.test(normalizedMessage)) {
+      score += 3;
+      console.log("Character description pattern detected (pose)");
+    }
+    
     // Additional patterns that strongly suggest image generation
     if (/create a .*(scene|landscape|portrait|picture|image)/i.test(normalizedMessage)) {
       score += 5;
+    }
+    
+    if (/design a .*(character|creature|warrior|hero|villain)/i.test(normalizedMessage)) {
+      score += 5;
+      console.log("Character design pattern detected");
     }
     
     // Check for detailed visual descriptions

@@ -36,7 +36,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     );
   }
   
-  // Default typing-style animation
+  // Enhanced default animation - more visually distinctive typing animation
   return (
     <div className="flex items-center">
       <div className="relative flex items-center min-w-[48px] h-6">

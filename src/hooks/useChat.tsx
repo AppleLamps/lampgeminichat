@@ -52,18 +52,28 @@ export const useChat = () => {
       // Set loading state
       setIsLoading(true);
       
-      // Determine loading message based on context
-      const tempLoadingMessage = imageData 
-        ? "Processing your image..." 
-        : content.toLowerCase().includes("image") || 
-          content.toLowerCase().includes("picture") ||
-          content.toLowerCase().includes("photo") ||
-          content.toLowerCase().includes("draw") ||
-          content.toLowerCase().includes("edit") ||
-          content.toLowerCase().includes("create") ||
-          content.toLowerCase().includes("generate")
-          ? "Generating image..." 
-          : "Thinking...";
+      // Enhanced loading message detection - ensure all sample prompts get proper feedback
+      let tempLoadingMessage = "Thinking...";
+      
+      // Image generation indicators in the message
+      const imageGenerationIndicators = [
+        "image", "picture", "photo", "draw", "edit", "create", "generate",
+        "design", "craft", "render", "compose", "depict", "illustrate",
+        "character", "landscape", "portrait", "scene", "fantasy", "artwork",
+        "warrior", "hero", "photorealistic"
+      ];
+      
+      // Check if any image generation keywords are in the message
+      const containsImageKeyword = imageGenerationIndicators.some(keyword => 
+        content.toLowerCase().includes(keyword)
+      );
+      
+      // Set appropriate loading message
+      if (imageData) {
+        tempLoadingMessage = "Processing your image...";
+      } else if (containsImageKeyword) {
+        tempLoadingMessage = "Generating image...";
+      }
       
       // Set the loading message for UI display - but don't add it to messages array
       setLoadingMessage(tempLoadingMessage);
