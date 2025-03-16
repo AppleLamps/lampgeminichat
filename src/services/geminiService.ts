@@ -17,8 +17,6 @@ export interface ChatMessage {
   isEditingImage?: boolean;
 }
 
-export type MessageContent = string | { text: string; image?: { data: string } };
-
 // Safety settings interface
 interface SafetySetting {
   category: string;
@@ -50,7 +48,7 @@ interface GeminiRequest {
     topK: number;
     topP: number;
     maxOutputTokens: number;
-    responseModalities?: string[]; // Critical addition for image generation
+    responseModalities?: string[]; // Critical for image generation
   };
   safetySettings: SafetySetting[];
 }
@@ -122,7 +120,7 @@ export class GeminiService {
       "visualize",
       "image of",
       "picture of",
-      "photo of" // Added this keyword
+      "photo of"
     ];
 
     return imageGenerationKeywords.some(keyword => 
@@ -130,22 +128,22 @@ export class GeminiService {
     );
   }
 
-  // Detect if the message is requesting image editing
+  // Improved detection for image editing requests
   private isImageEditingRequest(message: string, messages: ChatMessage[]): boolean {
+    // Check if there's a recent image in the conversation (within last 5 messages)
     const hasRecentImage = messages.slice(-5).some(msg => msg.imageUrl);
     
+    // If no recent images, it can't be an editing request
+    if (!hasRecentImage) return false;
+    
+    // Expanded list of editing keywords for better detection
     const editingKeywords = [
-      "edit this image",
-      "modify this image",
-      "change this image",
-      "update this image",
-      "transform this image",
-      "alter this image",
-      "adjust the image",
-      "make the image"
+      "edit", "modify", "change", "update", "transform", "alter", "adjust",
+      "make it", "turn it", "convert", "fix", "enhance", "improve", "refine",
+      "add", "remove", "put", "take", "replace", "recolor", "colorize"
     ];
 
-    return hasRecentImage && editingKeywords.some(keyword => 
+    return editingKeywords.some(keyword => 
       message.toLowerCase().includes(keyword.toLowerCase())
     );
   }
@@ -158,23 +156,53 @@ export class GeminiService {
       return null;
     }
 
-    // Determine the type of request
+    console.log("Processing message:", latestUserMessage.content);
+    console.log("Has image URL:", !!latestUserMessage.imageUrl);
+
+    // CASE 1: Handle case where an image is directly attached to the latest message
+    if (latestUserMessage.imageUrl) {
+      // If there's text with the image, assume it's an edit/caption request
+      if (latestUserMessage.content && latestUserMessage.content.trim().length > 0) {
+        console.log("Image attached with text, treating as edit request");
+        return this.editImage(latestUserMessage.content, latestUserMessage.imageUrl);
+      } else {
+        // If no text, just acknowledge the image
+        return {
+          role: "assistant",
+          content: "I've received your image. What would you like me to do with it?",
+          timestamp: new Date()
+        };
+      }
+    }
+
+    // CASE 2: Determine request type for text-only messages
     const isImageGeneration = this.isImageGenerationRequest(latestUserMessage.content);
     const isImageEditing = this.isImageEditingRequest(latestUserMessage.content, messages);
     
     console.log(`Request type: ${isImageGeneration ? 'Image Generation' : isImageEditing ? 'Image Editing' : 'Text Chat'}`);
     
-    // Choose the appropriate model and method based on the request type
+    // Choose the appropriate action based on the request type
     if (isImageGeneration) {
       return this.generateImage(latestUserMessage.content);
     } else if (isImageEditing) {
-      const imageToEdit = [...messages].reverse().find(msg => msg.imageUrl)?.imageUrl;
+      // Find the most recent image to edit
+      const imageToEdit = [...messages]
+        .reverse()
+        .find(msg => msg.imageUrl)?.imageUrl;
+      
       if (imageToEdit) {
         return this.editImage(latestUserMessage.content, imageToEdit);
+      } else {
+        // This shouldn't happen with proper detection, but handle it gracefully
+        return {
+          role: "assistant",
+          content: "I couldn't find a recent image to edit. Could you upload the image again?",
+          timestamp: new Date()
+        };
       }
     }
     
-    // Default to regular text chat
+    // Default to regular text chat for all other cases
     return this.sendTextMessage(messages);
   }
 
@@ -289,38 +317,60 @@ export class GeminiService {
     }
   }
 
-  // Edit an image with gemini-2.0-flash-exp
+  // Edit an image
   private async editImage(instructions: string, imageUrl: string): Promise<ChatMessage | null> {
     try {
       console.log("Editing image with instructions:", instructions);
       
-      // Convert the image URL to base64 if it's not already
-      let imageData = imageUrl;
+      // Extract the base64 data from the image URL
+      let imageData = "";
+      let mimeType = "image/jpeg";
+      
       if (imageUrl.startsWith('data:')) {
-        // Already base64, extract the data part
-        imageData = imageUrl.split(',')[1];
+        // It's already a data URL
+        const parts = imageUrl.split(',');
+        if (parts.length < 2) {
+          throw new Error("Invalid image data URL format");
+        }
+        
+        // Get the MIME type from the data URL
+        const mimeMatch = imageUrl.match(/data:([^;]+);base64,/);
+        mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        
+        // Get the base64 data
+        imageData = parts[1];
       } else {
-        // Fetch the image and convert to base64
+        // Try to fetch the image from a URL
         try {
           const response = await fetch(imageUrl);
           const blob = await response.blob();
-          imageData = await this.blobToBase64(blob);
-          imageData = imageData.split(',')[1]; // Remove the data:image/... prefix
+          
+          // Convert to base64
+          const base64 = await this.blobToBase64(blob);
+          const parts = base64.split(',');
+          if (parts.length < 2) {
+            throw new Error("Failed to convert image to base64");
+          }
+          
+          imageData = parts[1];
+          mimeType = blob.type || "image/jpeg";
         } catch (error) {
-          console.error("Error converting image to base64:", error);
-          toast.error("Failed to process the image for editing");
+          console.error("Error fetching or converting image:", error);
+          toast.error("Failed to process the image");
           return null;
         }
       }
 
-      // Create request payload for image editing
+      console.log("Prepared image data for editing, mime type:", mimeType);
+      
+      // Create request payload with image + text instructions
       const payload: GeminiRequest = {
         contents: [{
           role: "user",
           parts: [
             {
               inlineData: {
-                mimeType: this.getMimeTypeFromUrl(imageUrl),
+                mimeType: mimeType,
                 data: imageData
               }
             },
@@ -339,7 +389,7 @@ export class GeminiService {
         safetySettings: DEFAULT_SAFETY_SETTINGS
       };
 
-      // Call Gemini API for image editing
+      // Call Gemini API
       const data = await this.makeApiRequest(
         `${API_URL}/${IMAGE_GENERATION_MODEL}:generateContent`,
         payload
@@ -350,14 +400,17 @@ export class GeminiService {
         return null;
       }
 
-      // Check if the response contains an image
+      // Process the response
       const parts = data.candidates[0].content.parts;
+      console.log("Response has", parts.length, "parts");
+      
+      // Extract image and text from response
       const imagePart = parts.find((part: any) => part.inlineData?.mimeType?.startsWith('image/'));
       const textPart = parts.find((part: any) => part.text);
       
       if (!imagePart) {
-        // If no image, return text response
-        console.log("No image in edit response, returning text");
+        // If no image was returned, return just the text explanation
+        console.log("No image in edit response, returning text only");
         return {
           role: "assistant",
           content: textPart?.text || "I tried to edit the image, but couldn't complete the task.",
@@ -365,7 +418,7 @@ export class GeminiService {
         };
       }
 
-      // Create image URL from base64 data
+      // Create a data URL from the image data
       const editedImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
       console.log("Image edited successfully");
       
@@ -389,28 +442,5 @@ export class GeminiService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  }
-
-  // Helper to get MIME type from URL
-  private getMimeTypeFromUrl(url: string): string {
-    if (url.startsWith('data:')) {
-      const matches = url.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
-      return matches ? matches[1] : 'image/jpeg';
-    }
-    
-    const extension = url.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'image/jpeg';
-    }
   }
 }
