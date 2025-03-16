@@ -6,6 +6,7 @@ import { Send, Settings, Image, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { toast } from "sonner";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 interface ChatInputProps {
   onSendMessage: (content: string, imageData?: string) => void;
@@ -201,7 +202,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
             )}
           >
             {isLoading ? (
-              <div className="h-5 w-5 rounded-full border-2 border-t-transparent border-white animate-spin" />
+              <div className="flex items-center justify-center">
+                <div className="h-8 w-8 relative">
+                  <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse-subtle"></div>
+                  <div className="absolute inset-[3px] rounded-full border-2 border-t-transparent border-white/70 animate-spin"></div>
+                </div>
+              </div>
             ) : (
               <Send className={cn(
                 "h-5 w-5 transition-transform duration-300",

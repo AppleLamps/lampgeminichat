@@ -118,8 +118,12 @@ export default {
 					'100%': { backgroundPosition: '-200% center' }
 				},
 				'pulse-slow': {
-					'0%, 100%': { opacity: '1' },
-					'50%': { opacity: '0.8' }
+					'0%, 100%': { opacity: '1', transform: 'scale(1)' },
+					'50%': { opacity: '0.5', transform: 'scale(0.7)' }
+				},
+				'pulse-subtle': {
+					'0%, 100%': { transform: 'scale(1)', opacity: '1' },
+					'50%': { transform: 'scale(1.05)', opacity: '0.8' }
 				},
 				'border-pulse': {
 					'0%, 100%': { borderColor: 'rgba(255, 255, 255, 0.1)' },
@@ -136,7 +140,8 @@ export default {
 				'scale-in': 'scale-in 0.3s ease-out',
 				'blur-in': 'blur-in 0.4s ease-out',
 				'shine': 'shine 8s ease-in-out infinite',
-				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'pulse-slow': 'pulse-slow 1.5s ease-in-out infinite',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
 				'border-pulse': 'border-pulse 3s ease-in-out infinite'
 			},
 			boxShadow: {

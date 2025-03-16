@@ -140,6 +140,19 @@
   .glass-dark {
     @apply bg-black/70 backdrop-blur-md border border-white/10;
   }
+  
+  /* Animation delay utilities */
+  .animation-delay-0 {
+    animation-delay: 0ms;
+  }
+  
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+  
+  .animation-delay-1000 {
+    animation-delay: 1000ms;
+  }
 }
 
 /* Custom motion transitions */
@@ -158,3 +171,27 @@
 .transition-opacity-200 {
   transition: opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
+
+/* Update the tailwind keyframes with our custom animation */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+

@@ -3,13 +3,14 @@ import { useChat } from "@/hooks/useChat";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import { Button } from "@/components/ui/button";
-import { Trash2, Settings, MessageSquare, ArrowLeft } from "lucide-react";
+import { Trash2, Settings, ArrowLeft } from "lucide-react";
 import SettingsDialog from "@/components/SettingsDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 const Chat: React.FC = () => {
   const { messages, isLoading, loadingMessage, sendMessage, clearChat, isKeySet } = useChat();
@@ -18,30 +19,23 @@ const Chat: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  // Handle scroll events to apply header effects
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     setScrolled(target.scrollTop > 20);
   };
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading, loadingMessage]);
 
-  // Process URL query parameters for prompts
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const promptParam = queryParams.get('prompt');
     
-    // If there's a prompt in the URL and we're not already loading a message
     if (promptParam && !isLoading && messages.length <= 1) {
-      // Send the prompt from the URL
       sendMessage(promptParam);
-      
-      // Clear the prompt parameter from the URL without reloading the page
       window.history.replaceState({}, '', `${location.pathname}`);
     }
   }, [location, sendMessage, isLoading, messages.length]);
@@ -152,12 +146,7 @@ const Chat: React.FC = () => {
                 hoverEffect
                 className="px-4 py-3 flex items-center gap-2 w-fit max-w-[80%] bg-gradient-to-r from-emerald-500/5 to-teal-600/10 border-emerald-200/20 shadow-md"
               >
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:0ms]"></span>
-                  <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:150ms]"></span>
-                  <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:300ms]"></span>
-                </div>
-                <span className="text-sm text-emerald-600/90 dark:text-emerald-400/90">{loadingMessage}</span>
+                <LoadingIndicator message={loadingMessage} />
               </BlurContainer>
             </div>
           )}
