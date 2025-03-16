@@ -1,14 +1,14 @@
 
 import React from "react";
 import PromptCard from "./PromptCard";
-import { Image, Sparkles, Palette, Wand2, Brush, Mountains, Landmark, Bot } from "lucide-react";
+import { Image, Sparkles, Palette, Wand2, Brush, Mountain, Landmark, Bot } from "lucide-react";
 
 const TryPromptsSection: React.FC = () => {
   const prompts = [
     {
       title: "Fantasy Landscape",
       prompt: "Create a stunning fantasy landscape with floating islands, waterfalls, and a castle in the distance. Use vibrant colors and magical lighting.",
-      icon: <Mountains className="h-5 w-5 text-primary" />,
+      icon: <Mountain className="h-5 w-5 text-primary" />,
       category: "Landscape"
     },
     {
