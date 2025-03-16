@@ -7,26 +7,36 @@ interface BlurContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   intensity?: "light" | "medium" | "heavy";
   className?: string;
   containerClassName?: string;
+  gradient?: "none" | "subtle" | "prominent";
 }
 
 const BlurContainer = ({
   children,
   intensity = "medium",
+  gradient = "none",
   className,
   containerClassName,
   ...props
 }: BlurContainerProps) => {
   // Map intensity to blur amount
   const blurMap = {
-    light: "backdrop-blur-sm bg-white/50 dark:bg-black/30",
-    medium: "backdrop-blur-md bg-white/60 dark:bg-black/40",
-    heavy: "backdrop-blur-lg bg-white/70 dark:bg-black/50",
+    light: "backdrop-blur-sm bg-white/30 dark:bg-black/20",
+    medium: "backdrop-blur-md bg-white/40 dark:bg-black/30",
+    heavy: "backdrop-blur-lg bg-white/50 dark:bg-black/40",
+  };
+
+  // Map gradient options
+  const gradientMap = {
+    none: "",
+    subtle: "bg-gradient-to-br from-white/40 to-white/20 dark:from-black/40 dark:to-black/20",
+    prominent: "bg-gradient-to-br from-white/60 to-white/30 dark:from-black/60 dark:to-black/30",
   };
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-white/20 shadow-sm",
+        "relative overflow-hidden rounded-2xl border shadow-sm transition-all duration-300",
+        gradient !== "none" ? "border-white/10 dark:border-white/5" : "border-white/20 dark:border-white/10",
         containerClassName
       )}
       {...props}
@@ -35,6 +45,7 @@ const BlurContainer = ({
         className={cn(
           "relative z-10 h-full w-full p-6", 
           blurMap[intensity],
+          gradientMap[gradient],
           className
         )}
       >
