@@ -1,10 +1,9 @@
-
 import React from "react";
 import { ChatMessage as ChatMessageType } from "@/services/geminiService";
 import { cn } from "@/lib/utils";
 import { User, Bot, CheckCheck, Image, Copy, Check } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -25,7 +24,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const { theme } = useTheme();
   const isDarkTheme = theme === 'dark';
   
-  // For code block copying functionality
   const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
   
   const copyToClipboard = (code: string) => {
@@ -34,18 +32,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  // Function to detect if the message content contains code blocks
   const containsCodeBlock = (content: string) => {
     return content.includes("```");
   };
   
-  // Custom renderer for code blocks
   const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match && match[1] ? match[1] : '';
     const code = String(children).replace(/\n$/, '');
     
-    // For inline code
     if (inline) {
       return (
         <code className="px-1 py-0.5 mx-0.5 bg-slate-200 dark:bg-slate-800 rounded text-sm font-mono" {...props}>
@@ -54,7 +49,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       );
     }
     
-    // For code blocks
     return (
       <div className="relative my-4 rounded-md overflow-hidden">
         <div className="flex items-center justify-between px-4 py-1.5 bg-slate-800 dark:bg-slate-900 text-white">
@@ -80,12 +74,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     );
   };
   
-  // Custom component to render paragraphs with proper spacing
   const Paragraph = (props: any) => {
     return <p className="mb-4 last:mb-0" {...props} />;
   };
   
-  // Custom component for headings
   const Heading = ({ level, children, ...props }: any) => {
     const sizes = {
       1: "text-2xl font-bold mt-6 mb-4",
@@ -100,7 +92,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     return <Tag className={sizes[level as keyof typeof sizes]} {...props}>{children}</Tag>;
   };
   
-  // Custom component for links
   const Link = (props: any) => {
     return (
       <a 
@@ -112,17 +103,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     );
   };
   
-  // Custom components for lists
   const ListItem = (props: any) => <li className="ml-6 mb-1" {...props} />;
   const OrderedList = (props: any) => <ol className="list-decimal mb-4" {...props} />;
   const UnorderedList = (props: any) => <ul className="list-disc mb-4" {...props} />;
   
-  // Custom component for block quotes
   const Blockquote = (props: any) => (
     <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 py-1 my-4 text-slate-600 dark:text-slate-300 italic" {...props} />
   );
   
-  // Custom component for tables
   const Table = (props: any) => (
     <div className="overflow-x-auto my-4">
       <table className="w-full border-collapse" {...props} />
@@ -139,7 +127,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     return <td className="px-4 py-2" {...props} />;
   };
   
-  // Create a components object for ReactMarkdown
   const markdownComponents = {
     code: CodeBlock,
     p: Paragraph,
@@ -162,7 +149,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     td: (props: any) => <TableCell isHeader={false} {...props} />
   };
   
-  // Function to render message content with or without markdown
   const renderMessageContent = () => {
     const hasMarkdown = /[*_~`#>\[\]\(\)]/g.test(message.content) || containsCodeBlock(message.content);
     
@@ -222,6 +208,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     : "bg-gradient-to-br from-primary to-primary/70 ring-primary/20 hover:ring-primary/40"
                 )}
               >
+                {!isUser && (
+                  <AvatarImage 
+                    src="/lovable-uploads/d03f6a93-56ad-44c9-9425-21d55cef2fdf.png"
+                    alt="AI Avatar"
+                    className="h-full w-full object-cover"
+                  />
+                )}
                 <AvatarFallback className="text-white">
                   {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                 </AvatarFallback>
@@ -242,7 +235,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 isUser 
                   ? "bg-gradient-to-br from-indigo-500/15 to-purple-600/10 border-indigo-200/30 hover:border-indigo-200/50" 
                   : "bg-gradient-to-br from-primary/15 to-primary/10 border-primary/30 hover:border-primary/50",
-                // Add extra padding when message has code blocks
                 containsCodeBlock(message.content) ? "px-4 py-3" : ""
               )}
             >
