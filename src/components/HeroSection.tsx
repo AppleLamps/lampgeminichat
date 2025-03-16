@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { BlurContainer } from "@/components/ui/blur-container";
@@ -26,7 +25,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
               <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium animate-fade-in">
                 <span className="flex items-center gap-1.5">
                   <div className="h-3.5 w-3.5 rounded-full overflow-hidden">
-                    <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Gemini Icon" />
+                    <img src="/lovable-uploads/d03f6a93-56ad-44c9-9425-21d55cef2fdf.png" className="h-full w-full object-cover" alt="Gemini Icon" />
                   </div>
                   Powered by Gemini
                 </span>
@@ -69,7 +68,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
                 <div className="flex items-start gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground overflow-hidden">
                     <div className="h-full w-full">
-                      <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Bot" />
+                      <img src="/lovable-uploads/d03f6a93-56ad-44c9-9425-21d55cef2fdf.png" className="h-full w-full object-cover" alt="Bot" />
                     </div>
                   </div>
                   <div className="bg-muted/10 rounded-md p-3 max-w-[80%]">
@@ -90,7 +89,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSettings }) => {
                 
                 <div className="flex items-start gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground overflow-hidden">
-                    <img src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" className="h-full w-full object-cover" alt="Bot" />
+                    <img src="/lovable-uploads/d03f6a93-56ad-44c9-9425-21d55cef2fdf.png" className="h-full w-full object-cover" alt="Bot" />
                   </div>
                   <div className="bg-muted/10 rounded-md p-3 max-w-[80%]">
                     <p className="text-sm">Quantum computing uses quantum bits or qubits, which can be both 0 and 1 at the same time. This allows quantum computers to process complex problems much faster than traditional computers...</p>

@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
             <Link to="/" className="text-xl font-medium transition-colors hover:text-black flex items-center gap-2">
               <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                 <img 
-                  src="/lovable-uploads/2ea9d6c1-c772-4b90-b5ad-7bc25d1bc702.png" 
+                  src="/lovable-uploads/d03f6a93-56ad-44c9-9425-21d55cef2fdf.png" 
                   alt="Gemini Chat Logo" 
                   className="h-full w-full object-cover" 
                 />
