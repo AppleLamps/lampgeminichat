@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import ChatMessage from "@/components/ChatMessage";
@@ -10,13 +9,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Chat: React.FC = () => {
   const { messages, isLoading, loadingMessage, sendMessage, clearChat, isKeySet } = useChat();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
   // Handle scroll events to apply header effects
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -30,6 +30,21 @@ const Chat: React.FC = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading, loadingMessage]);
+
+  // Process URL query parameters for prompts
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const promptParam = queryParams.get('prompt');
+    
+    // If there's a prompt in the URL and we're not already loading a message
+    if (promptParam && !isLoading && messages.length <= 1) {
+      // Send the prompt from the URL
+      sendMessage(promptParam);
+      
+      // Clear the prompt parameter from the URL without reloading the page
+      window.history.replaceState({}, '', `${location.pathname}`);
+    }
+  }, [location, sendMessage, isLoading, messages.length]);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
