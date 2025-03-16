@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ChatMessage as ChatMessageType } from "@/services/geminiService";
 import { cn } from "@/lib/utils";
@@ -218,7 +219,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                   "h-8 w-8 ring-2 transition-all duration-300 shadow-md",
                   isUser 
                     ? "bg-gradient-to-br from-indigo-500 to-purple-600 ring-indigo-500/20 hover:ring-indigo-500/40" 
-                    : "bg-gradient-to-br from-emerald-500 to-teal-600 ring-emerald-500/20 hover:ring-emerald-500/40"
+                    : "bg-gradient-to-br from-primary to-primary/70 ring-primary/20 hover:ring-primary/40"
                 )}
               >
                 <AvatarFallback className="text-white">
@@ -240,7 +241,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 "py-3 px-4 transition-all duration-300 shadow-md",
                 isUser 
                   ? "bg-gradient-to-br from-indigo-500/15 to-purple-600/10 border-indigo-200/30 hover:border-indigo-200/50" 
-                  : "bg-gradient-to-br from-emerald-500/15 to-teal-600/10 border-emerald-200/30 hover:border-emerald-200/50",
+                  : "bg-gradient-to-br from-primary/15 to-primary/10 border-primary/30 hover:border-primary/50",
                 // Add extra padding when message has code blocks
                 containsCodeBlock(message.content) ? "px-4 py-3" : ""
               )}
