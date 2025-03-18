@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Settings, Image, X } from "lucide-react";
+import { Send, Settings, Image, X, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BlurContainer } from "@/components/ui/blur-container";
 import { toast } from "sonner";
@@ -24,8 +24,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [imageData, setImageData] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,10 +45,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
+  const processImageFile = (file: File) => {
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("Image size should be less than 10MB");
@@ -62,14 +61,62 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       setImageData(event.target?.result as string);
+      toast.success("Image added successfully");
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processImageFile(file);
   };
 
   const clearImage = () => {
     setImageData(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLoading || !isKeySet) return;
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLoading || !isKeySet) return;
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = "copy";
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only set isDragging to false if we're leaving the dropzone and not entering a child element
+    if (!dropZoneRef.current?.contains(e.relatedTarget as Node)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (isLoading || !isKeySet) return;
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0]; // Take only the first file
+      processImageFile(file);
     }
   };
 
@@ -86,23 +133,39 @@ const ChatInput: React.FC<ChatInputProps> = ({
     <form
       onSubmit={handleSubmit}
       className="sticky bottom-0 p-4 z-10"
+      ref={dropZoneRef}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       <BlurContainer 
         intensity="medium"
-        gradient={isFocused ? "subtle" : "none"}
+        gradient={isFocused || isDragging ? "subtle" : "none"}
         hoverEffect
         className={cn(
           "p-3 transition-all duration-500 bg-background/70",
-          isFocused 
+          isFocused || isDragging
             ? "shadow-lg border-primary/10 dark:border-primary/20" 
             : "border-white/10 dark:border-white/5",
-          "animate-slide-up"
+          isDragging && "ring-2 ring-primary/30 dark:ring-primary/40",
+          "animate-slide-up relative"
         )}
         containerClassName={cn(
           "shadow-md hover:shadow-xl dark:shadow-primary/5 hover:shadow-primary/10 dark:hover:shadow-primary/20",
           "transition-all duration-300 ease-in-out"
         )}
       >
+        {/* Drag overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 bg-primary/5 dark:bg-primary/10 rounded-lg backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in">
+            <div className="flex flex-col items-center gap-2 p-6 text-primary/70 dark:text-primary/80">
+              <Upload className="h-8 w-8 animate-bounce duration-1000 opacity-80" />
+              <p className="text-sm font-medium">Drop image here</p>
+            </div>
+          </div>
+        )}
+        
         {imageData && (
           <div className="mb-3 relative rounded-md overflow-hidden border border-primary/20 max-w-xs mx-auto">
             <img 
@@ -142,7 +205,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={imageData ? "Describe what you want to do with this image..." : "Type a message or ask for an image..."}
+              placeholder={imageData ? "Describe what you want to do with this image..." : "Type a message or drop an image here..."}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               className={cn(
