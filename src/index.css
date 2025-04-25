@@ -136,20 +136,20 @@
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/30;
   }
-  
+
   .glass-dark {
     @apply bg-black/70 backdrop-blur-md border border-white/10;
   }
-  
+
   /* Animation delay utilities */
   .animation-delay-0 {
     animation-delay: 0ms;
   }
-  
+
   .animation-delay-500 {
     animation-delay: 500ms;
   }
-  
+
   .animation-delay-1000 {
     animation-delay: 1000ms;
   }
@@ -193,5 +193,27 @@
     transform: scale(1.05);
     opacity: 0.8;
   }
+}
+
+/* Grid pattern backgrounds */
+.bg-grid-pattern-light {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-grid-pattern-dark {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Chat message animations */
+.animate-in {
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
 }
 
