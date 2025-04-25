@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 // Configuration for the Gemini API
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL = "gemini-2.0-flash-exp"; // Using same model for text and image generation
+const MODEL = "gemini-2.5-flash-preview-04-17"; // Using updated model for text and image generation
 const IMAGE_EDITING_MODEL = "gemini-2.0-flash-exp-image-generation"; // Keep separate model for image editing
 
 export type MessageRole = "user" | "assistant" | "system";
@@ -15,7 +15,7 @@ export interface ChatMessage {
   imageUrl?: string;
   isGeneratingImage?: boolean;
   isEditingImage?: boolean;
-}
+  }
 
 // Safety settings interface
 interface SafetySetting {
@@ -66,6 +66,79 @@ export class GeminiService {
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
+  }
+
+  // Generate an image with Imagen 3 (high-powered photo generation)
+  async generateImageWithImagen3(
+    prompt: string,
+    config: {
+      numberOfImages?: number;
+      aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
+      personGeneration?: "DONT_ALLOW" | "ALLOW_ADULT";
+    } = {}
+  ): Promise<ChatMessage | null> {
+    try {
+      // Default config
+      const {
+        numberOfImages = 1,
+        aspectRatio = "1:1",
+        personGeneration = "ALLOW_ADULT"
+      } = config;
+
+      // Imagen 3 endpoint and model
+      const IMAGEN3_MODEL = "imagen-3.0-generate-002";
+      const IMAGEN3_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+
+      const payload = {
+        prompt,
+        config: {
+          numberOfImages,
+          aspectRatio,
+          personGeneration
+        }
+      };
+
+      const response = await fetch(
+        `${IMAGEN3_URL}/${IMAGEN3_MODEL}:generateImages?key=${this.apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Imagen 3 API error:", errorData);
+        toast.error("Failed to generate image with Imagen 3");
+        return null;
+      }
+
+      const data = await response.json();
+
+      if (!data || !data.generatedImages || !data.generatedImages.length) {
+        toast.error("Imagen 3 did not return any images");
+        return null;
+      }
+
+      // Only use the first image for now
+      const generatedImage = data.generatedImages[0];
+      const imgBytes = generatedImage.image.imageBytes;
+      const imageUrl = `data:image/png;base64,${imgBytes}`;
+
+      return {
+        role: "assistant",
+        content: "Here's your high-powered Imagen 3 image:",
+        imageUrl,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error("Error in generateImageWithImagen3:", error);
+      toast.error("Failed to generate image with Imagen 3");
+      return null;
+    }
   }
 
   private async makeApiRequest(url: string, payload: any): Promise<any> {

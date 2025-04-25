@@ -2,10 +2,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { GeminiService, ChatMessage } from "@/services/geminiService";
 import { useApiKey } from "@/context/ApiKeyContext";
+import { useImagen3 } from "@/context/Imagen3Context";
 import { toast } from "sonner";
 
 export const useChat = () => {
   const { apiKey, isKeySet } = useApiKey();
+  const { imagen3Enabled } = useImagen3();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
@@ -88,9 +90,20 @@ export const useChat = () => {
       
       // Initialize Gemini service with API key
       const geminiService = new GeminiService(apiKey);
-      
-      // Send request to Gemini API
-      const response = await geminiService.sendMessage(currentMessages);
+
+      let response;
+      // If Imagen 3 is enabled and this is an image generation request, use Imagen 3 (to be implemented)
+      if (imagen3Enabled && !imageData && containsImageKeyword) {
+        // Placeholder: Imagen 3 logic will be implemented in GeminiService and called here
+        if (typeof geminiService.generateImageWithImagen3 === "function") {
+          response = await geminiService.generateImageWithImagen3(content);
+        } else {
+          response = await geminiService.sendMessage(currentMessages);
+        }
+      } else {
+        // Default: use Gemini
+        response = await geminiService.sendMessage(currentMessages);
+      }
       
       // Clear loading message
       setLoadingMessage(null);

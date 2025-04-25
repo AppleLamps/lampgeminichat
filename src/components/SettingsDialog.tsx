@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useApiKey } from "@/context/ApiKeyContext";
 import { Key, Save, X, Trash2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useImagen3 } from "@/context/Imagen3Context";
+import { Switch } from "@/components/ui/switch";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -20,6 +22,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const { apiKey, setApiKey, clearApiKey, isKeySet } = useApiKey();
   const [inputValue, setInputValue] = useState(apiKey);
   const [showApiKey, setShowApiKey] = useState(false);
+
+  // Imagen 3 toggle
+  const { imagen3Enabled, setImagen3Enabled } = useImagen3();
 
   const handleSave = () => {
     setApiKey(inputValue.trim());
@@ -66,6 +71,18 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 </Button>
               )}
             </div>
+
+        {/* Imagen 3 Toggle */}
+        <div className="flex items-center justify-between py-2">
+          <Label htmlFor="imagen3-toggle" className="text-sm font-medium">
+            Use Imagen 3 for high-powered photo generation
+          </Label>
+          <Switch
+            id="imagen3-toggle"
+            checked={imagen3Enabled}
+            onCheckedChange={setImagen3Enabled}
+          />
+        </div>
             <div className="relative">
               <Input
                 id="api-key"
